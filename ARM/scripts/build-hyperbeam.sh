@@ -9,6 +9,19 @@ HYPERBEAM_VERSION="${HYPERBEAM_VERSION:-$(awk -F'\\?= ' '/^HYPERBEAM_VERSION/ {p
 SRC_DIR="${HYPERBEAM_SRC:-$BUILD_DIR/hyperbeam-src}"
 REL_DIR="$SRC_DIR/_build/lapee/rel/hb"
 
+find_release_dir() {
+    if [ -x "$REL_DIR/bin/hb" ]; then
+        printf '%s\n' "$REL_DIR"
+        return 0
+    fi
+    found=$(find "$SRC_DIR/_build" -path '*/rel/hb/bin/hb' -type f -perm -111 2>/dev/null | head -n 1 || true)
+    if [ -n "$found" ]; then
+        dirname "$(dirname "$found")"
+        return 0
+    fi
+    return 1
+}
+
 mkdir -p "$BUILD_DIR"
 
 if [ ! -d "$SRC_DIR/.git" ]; then
@@ -39,5 +52,8 @@ cd "$SRC_DIR"
 "$REBAR" as lapee compile
 "$REBAR" as lapee release
 
-test -x "$REL_DIR/bin/hb"
+REL_DIR=$(find_release_dir) || {
+    echo "HyperBEAM release command finished, but no rel/hb/bin/hb was found under $SRC_DIR/_build." >&2
+    exit 1
+}
 echo "HyperBEAM ARM release built at $REL_DIR"

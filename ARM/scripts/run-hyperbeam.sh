@@ -6,8 +6,22 @@ BUILD_DIR="${BUILD_DIR:-$ARM_ROOT/build}"
 REL_DIR="${REL_DIR:-$BUILD_DIR/hyperbeam-src/_build/lapee/rel/hb}"
 CONFIG="${CONFIG:-$ARM_ROOT/config/lapee-arm.json}"
 
-if [ ! -x "$REL_DIR/bin/hb" ]; then
+find_release_dir() {
+    if [ -x "$REL_DIR/bin/hb" ]; then
+        printf '%s\n' "$REL_DIR"
+        return 0
+    fi
+    found=$(find "$BUILD_DIR" -path '*/rel/hb/bin/hb' -type f -perm -111 2>/dev/null | head -n 1 || true)
+    if [ -n "$found" ]; then
+        dirname "$(dirname "$found")"
+        return 0
+    fi
+    return 1
+}
+
+if ! REL_DIR=$(find_release_dir); then
     echo "HyperBEAM release missing. Run: make build" >&2
+    echo "Looked under: $BUILD_DIR" >&2
     exit 1
 fi
 

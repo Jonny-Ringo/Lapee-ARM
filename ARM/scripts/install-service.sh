@@ -7,13 +7,27 @@ INSTALL_PREFIX="${INSTALL_PREFIX:-/opt/lapee-arm}"
 CONFIG_DIR="${CONFIG_DIR:-/etc/lapee-arm}"
 REL_DIR="${REL_DIR:-$BUILD_DIR/hyperbeam-src/_build/lapee/rel/hb}"
 
+find_release_dir() {
+    if [ -x "$REL_DIR/bin/hb" ]; then
+        printf '%s\n' "$REL_DIR"
+        return 0
+    fi
+    found=$(find "$BUILD_DIR" -path '*/rel/hb/bin/hb' -type f -perm -111 2>/dev/null | head -n 1 || true)
+    if [ -n "$found" ]; then
+        dirname "$(dirname "$found")"
+        return 0
+    fi
+    return 1
+}
+
 if [ "$(id -u)" -ne 0 ]; then
     echo "install-service.sh must run as root. Use: sudo make install" >&2
     exit 1
 fi
 
-if [ ! -x "$REL_DIR/bin/hb" ]; then
+if ! REL_DIR=$(find_release_dir); then
     echo "HyperBEAM release missing. Run: make build first." >&2
+    echo "Looked under: $BUILD_DIR" >&2
     exit 1
 fi
 
