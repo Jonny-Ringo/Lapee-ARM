@@ -50,6 +50,25 @@ fi
 if [ "${LAPEE_ARM_USE_RUSTUP:-0}" = "1" ] && [ -d "$HOME/.cargo/bin" ]; then
     export PATH="$HOME/.cargo/bin:$PATH"
 fi
+if [ "${LAPEE_ARM_USE_RUSTUP:-0}" != "1" ] && [ -x /usr/bin/cargo ]; then
+    mkdir -p "$BUILD_DIR/.lapee-arm-bin"
+    cat > "$BUILD_DIR/.lapee-arm-bin/cargo" <<EOF
+#!/usr/bin/env bash
+set -o pipefail
+log="$BUILD_DIR/cargo-last.log"
+{
+    echo "== cargo \$(date -Iseconds) =="
+    echo "cwd=\$PWD"
+    echo "args: \$*"
+    /usr/bin/cargo "\$@"
+} 2>&1 | tee "\$log"
+exit "\${PIPESTATUS[0]}"
+EOF
+    chmod +x "$BUILD_DIR/.lapee-arm-bin/cargo"
+    export PATH="$BUILD_DIR/.lapee-arm-bin:/usr/bin:$PATH"
+    export CARGO=/usr/bin/cargo
+    export RUSTC="${RUSTC:-/usr/bin/rustc}"
+fi
 export LAPEE_TSS2_PREFIX="${LAPEE_TSS2_PREFIX:-/usr}"
 export CFLAGS="${CFLAGS:-} -Wno-error=incompatible-pointer-types"
 export OPENSSL_DIR="${OPENSSL_DIR:-/usr}"
