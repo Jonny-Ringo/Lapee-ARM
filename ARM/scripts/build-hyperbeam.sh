@@ -14,8 +14,9 @@ find_release_dir() {
         printf '%s\n' "$REL_DIR"
         return 0
     fi
-    found=$(find "$SRC_DIR/_build" -path '*/rel/hb/bin/hb' -type f -perm -111 2>/dev/null | head -n 1 || true)
+    found=$(find "$SRC_DIR/_build" -path '*/bin/hb' -type f 2>/dev/null | head -n 1 || true)
     if [ -n "$found" ]; then
+        chmod +x "$found" 2>/dev/null || true
         dirname "$(dirname "$found")"
         return 0
     fi
