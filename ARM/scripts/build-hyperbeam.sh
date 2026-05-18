@@ -56,8 +56,22 @@ export OPENSSL_DIR="${OPENSSL_DIR:-/usr}"
 export OPENSSL_NO_VENDOR=1
 export DIAGNOSTIC="${DIAGNOSTIC:-1}"
 export CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS:-1}"
+export LAPEE_ARM_STUB_SNP_NIF="${LAPEE_ARM_STUB_SNP_NIF:-1}"
 
 cd "$SRC_DIR"
+if [ "$LAPEE_ARM_STUB_SNP_NIF" = "1" ] && [ -f src/dev_snp_nif.erl ]; then
+    cp src/dev_snp_nif.erl src/dev_snp_nif.erl.lapee-arm.bak
+    cat > src/dev_snp_nif.erl <<'EOF'
+-module(dev_snp_nif).
+-export([supported/0, report/2]).
+
+supported() ->
+    {ok, false}.
+
+report(_ReportData, _VMPL) ->
+    {error, snp_nif_disabled_on_lapee_arm}.
+EOF
+fi
 "$REBAR" as lapee compile
 "$REBAR" as lapee release
 
