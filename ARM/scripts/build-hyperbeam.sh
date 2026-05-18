@@ -47,10 +47,17 @@ else
     REBAR=rebar3
 fi
 
-if [ "${LAPEE_ARM_USE_RUSTUP:-0}" = "1" ] && [ -d "$HOME/.cargo/bin" ]; then
-    export PATH="$HOME/.cargo/bin:$PATH"
+if [ "${LAPEE_ARM_USE_RUSTUP:-0}" = "1" ] && [ -x "$HOME/.cargo/bin/cargo" ]; then
+    REAL_CARGO="$HOME/.cargo/bin/cargo"
+    export RUSTC="${RUSTC:-$HOME/.cargo/bin/rustc}"
+elif [ -x /usr/bin/cargo ]; then
+    REAL_CARGO=/usr/bin/cargo
+    export RUSTC="${RUSTC:-/usr/bin/rustc}"
+else
+    REAL_CARGO=$(command -v cargo || true)
 fi
-if [ "${LAPEE_ARM_USE_RUSTUP:-0}" != "1" ] && [ -x /usr/bin/cargo ]; then
+
+if [ -n "${REAL_CARGO:-}" ]; then
     mkdir -p "$BUILD_DIR/.lapee-arm-bin"
     cat > "$BUILD_DIR/.lapee-arm-bin/cargo" <<EOF
 #!/usr/bin/env bash
@@ -60,14 +67,13 @@ log="$BUILD_DIR/cargo-last.log"
     echo "== cargo \$(date -Iseconds) =="
     echo "cwd=\$PWD"
     echo "args: \$*"
-    /usr/bin/cargo "\$@"
+    "$REAL_CARGO" "\$@"
 } 2>&1 | tee "\$log"
 exit "\${PIPESTATUS[0]}"
 EOF
     chmod +x "$BUILD_DIR/.lapee-arm-bin/cargo"
-    export PATH="$BUILD_DIR/.lapee-arm-bin:/usr/bin:$PATH"
-    export CARGO=/usr/bin/cargo
-    export RUSTC="${RUSTC:-/usr/bin/rustc}"
+    export PATH="$BUILD_DIR/.lapee-arm-bin:$PATH"
+    export CARGO="$BUILD_DIR/.lapee-arm-bin/cargo"
 fi
 export LAPEE_TSS2_PREFIX="${LAPEE_TSS2_PREFIX:-/usr}"
 export CFLAGS="${CFLAGS:-} -Wno-error=incompatible-pointer-types"
