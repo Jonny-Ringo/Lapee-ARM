@@ -21,16 +21,16 @@ help:
 	  '  make clean      Remove ARM/build only'
 
 deps:
-	./scripts/install-deps.sh
+	sh ./scripts/install-deps.sh
 
 build:
-	./scripts/build-hyperbeam.sh
+	bash ./scripts/build-hyperbeam.sh
 
 run:
-	./scripts/run-hyperbeam.sh
+	bash ./scripts/run-hyperbeam.sh
 
 install:
-	./scripts/install-service.sh
+	bash ./scripts/install-service.sh
 
 service:
 	systemctl daemon-reload
