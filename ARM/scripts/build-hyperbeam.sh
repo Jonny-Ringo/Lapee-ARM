@@ -48,6 +48,7 @@ export LAPEE_TSS2_PREFIX="${LAPEE_TSS2_PREFIX:-/usr}"
 export CFLAGS="${CFLAGS:-} -Wno-error=incompatible-pointer-types"
 export OPENSSL_DIR="${OPENSSL_DIR:-/usr}"
 export OPENSSL_NO_VENDOR=1
+export DIAGNOSTIC="${DIAGNOSTIC:-1}"
 
 cd "$SRC_DIR"
 "$REBAR" as lapee compile
