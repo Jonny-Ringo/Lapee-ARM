@@ -74,6 +74,17 @@ The build script:
 If the Pi has limited RAM, add swap before building. HyperBEAM and native NIF
 dependencies are not tiny.
 
+On 32-bit Raspberry Pi OS, Cargo/Rust failures are the most likely blocker.
+The build script uses one Cargo job by default, but if Debian's packaged Rust is
+too old, install rustup and retry:
+
+```sh
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+. "$HOME/.cargo/env"
+rustup default stable
+make build
+```
+
 ## Attestation Status
 
 This first ARM port is "LapEE-inspired", not a replacement for the x86 laptop

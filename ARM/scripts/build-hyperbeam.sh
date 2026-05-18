@@ -44,11 +44,15 @@ else
     REBAR=rebar3
 fi
 
+if [ -d "$HOME/.cargo/bin" ]; then
+    export PATH="$HOME/.cargo/bin:$PATH"
+fi
 export LAPEE_TSS2_PREFIX="${LAPEE_TSS2_PREFIX:-/usr}"
 export CFLAGS="${CFLAGS:-} -Wno-error=incompatible-pointer-types"
 export OPENSSL_DIR="${OPENSSL_DIR:-/usr}"
 export OPENSSL_NO_VENDOR=1
 export DIAGNOSTIC="${DIAGNOSTIC:-1}"
+export CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS:-1}"
 
 cd "$SRC_DIR"
 "$REBAR" as lapee compile
