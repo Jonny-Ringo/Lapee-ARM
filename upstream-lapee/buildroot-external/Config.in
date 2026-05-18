@@ -1,0 +1,11 @@
+# LapEE BR2_EXTERNAL — custom packages.
+#
+# Buildroot owns the entire userspace: kernel, OTP, OpenSSL,
+# libtss2, busybox, wpa_supplicant, etc. The custom package
+# below sits on top and cross-compiles HyperBEAM against
+# Buildroot's OTP + libtss2.
+
+menu "LapEE packages"
+	source "$BR2_EXTERNAL_LAPEE_PATH/package/hyperbeam/Config.in"
+	source "$BR2_EXTERNAL_LAPEE_PATH/package/lapee-sb-provisioner/Config.in"
+endmenu

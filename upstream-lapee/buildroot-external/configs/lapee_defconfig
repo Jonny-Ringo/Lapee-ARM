@@ -1,0 +1,198 @@
+# lapee_defconfig — source-built LapEE target userspace.
+#
+# Buildroot bootstraps its own cross-toolchain from source on
+# every build (BR2_TOOLCHAIN_BUILDROOT=y); the cross-compiler
+# itself is therefore from-source. The userspace (Erlang/OTP,
+# OpenSSL, libtss2, busybox, wpa_supplicant, iproute2, iw) is
+# Buildroot-cross-compiled from upstream tarballs Buildroot
+# fetches with sha256 verification. HyperBEAM is built by the
+# custom `hyperbeam' package in this BR2_EXTERNAL tree.
+#
+# The output is a single rootfs.cpio.zst that becomes the
+# initramfs of the LapEE UKI. Remaining prebuilt bytes in the
+# final boot image are documented in README.md: Debian's x64
+# systemd EFI stub for the UKI, and vendor firmware blobs where
+# no source release exists.
+
+# Architecture
+BR2_x86_64=y
+BR2_x86_core2=y
+
+# ----- toolchain: bootstrap from source ----------------------
+# Buildroot builds gcc / glibc / binutils from source on every
+# fresh build. No Bootlin dependency; no pre-built binaries in
+# the toolchain trust chain. The bootstrap runs natively on
+# whatever host arch the build container is at, producing a
+# cross-compiler that targets x86_64-linux-glibc.
+#
+# glibc rather than musl: Erlang/OTP runs cleanly on glibc out
+# of the box; musl needs stack-size patches that Alpine carries
+# and OTP doesn't have upstream consensus on. The image-size
+# saving from musl (~5 MB) doesn't matter for a 1 GB USB stick.
+BR2_TOOLCHAIN_BUILDROOT=y
+BR2_TOOLCHAIN_BUILDROOT_GLIBC=y
+BR2_TOOLCHAIN_BUILDROOT_VENDOR="lapee"
+BR2_TOOLCHAIN_BUILDROOT_CXX=y
+# Kernel headers pinned explicitly to 6.19 — that drives
+# BR2_TOOLCHAIN_HEADERS_AT_LEAST to a value high enough that
+# glibc's choice dependency is satisfied (otherwise Buildroot
+# silently falls back to uclibc, with HEADERS_AT_LEAST=2.6).
+# BR2_KERNEL_HEADERS_AS_KERNEL doesn't compute the at-least
+# value correctly in 2026.02.1; explicit X_Y pin works.
+BR2_KERNEL_HEADERS_6_19=y
+
+# ----- init / rootfs structure -------------------------------
+# Init: the LapEE shell init lives in the rootfs overlay at
+# /init; the kernel boots straight to it via rdinit=/init.
+# BR2_INIT_NONE means Buildroot doesn't install a PID-1 of its
+# own (no sysvinit, no systemd).
+BR2_INIT_NONE=y
+BR2_ROOTFS_OVERLAY="$(BR2_EXTERNAL_LAPEE_PATH)/board/lapee/rootfs-overlay"
+BR2_ROOTFS_POST_BUILD_SCRIPT="$(BR2_EXTERNAL_LAPEE_PATH)/board/lapee/post-build.sh"
+
+# ----- kernel ------------------------------------------------
+BR2_LINUX_KERNEL=y
+BR2_LINUX_KERNEL_CUSTOM_VERSION=y
+BR2_LINUX_KERNEL_CUSTOM_VERSION_VALUE="6.19.12"
+# (kernel pin matches Buildroot 2026.02.1's latest tested kernel set)
+BR2_LINUX_KERNEL_DEFCONFIG="x86_64"
+BR2_LINUX_KERNEL_CONFIG_FRAGMENT_FILES="$(BR2_EXTERNAL_LAPEE_PATH)/board/lapee/linux-m1-fragment.config"
+BR2_LINUX_KERNEL_BZIMAGE=y
+BR2_LINUX_KERNEL_INSTALL_TARGET=y
+BR2_GLOBAL_PATCH_DIR="$(BR2_EXTERNAL_LAPEE_PATH)/board/lapee/patches"
+
+# ----- filesystem -------------------------------------------
+# cpio.zst is smaller and faster to load; CONFIG_RD_ZSTD=y
+# is enabled in our kernel fragment.
+BR2_TARGET_ROOTFS_CPIO=y
+BR2_TARGET_ROOTFS_CPIO_ZSTD=y
+
+# ----- userspace --------------------------------------------
+# busybox: the operator shell + most coreutils. Already on.
+BR2_PACKAGE_BUSYBOX=y
+BR2_PACKAGE_BUSYBOX_SHOW_OTHERS=y
+
+# Erlang/OTP: target runtime. scripts/build-buildroot.sh pins
+# ERLANG_VERSION=27.x because current HyperBEAM edge uses OTP 27 syntax
+# while Buildroot 2026.02.1 defaults to OTP 26.
+BR2_PACKAGE_ERLANG=y
+
+# OpenSSL: BEAM crypto NIFs link against this. libtss2's TPM
+# auth-session encryption also uses libcrypto.
+BR2_PACKAGE_OPENSSL=y
+
+# System CA roots: outbound HTTPS from HyperBEAM relay/oracle paths must
+# validate normal public certificates inside the appliance.
+BR2_PACKAGE_CA_CERTIFICATES=y
+
+# tpm2-tss: the user-space TPM 2.0 stack. Provides
+# libtss2-esys.so.0 (Esys API), libtss2-mu.so.0 (TPMS_*
+# marshalling), libtss2-tctildr (TCTI loader), and friends.
+# dev_tpm2's lapee_tpm_nif links against -ltss2-esys -ltss2-mu
+# -ltss2-tctildr.
+BR2_PACKAGE_TPM2_TSS=y
+
+# WiFi userspace.
+BR2_PACKAGE_WPA_SUPPLICANT=y
+BR2_PACKAGE_WPA_SUPPLICANT_CTRL_IFACE=y
+BR2_PACKAGE_IW=y
+
+# ip / ss / network setup.
+BR2_PACKAGE_IPROUTE2=y
+
+# Encrypted non-volatile storage. The provisioner uses parted to create the
+# marker partition; runtime uses cryptsetup + ext4 after a green-zone key is
+# available.
+BR2_PACKAGE_CRYPTSETUP=y
+BR2_PACKAGE_E2FSPROGS=y
+BR2_PACKAGE_PARTED=y
+
+# Broad laptop network + graphics firmware. These are the only non-source
+# binaries in the chain; their measurements are extended into PCR 9 by the
+# kernel firmware loader, so a verifier can chain-validate against a
+# known-good list.
+BR2_PACKAGE_LINUX_FIRMWARE=y
+BR2_PACKAGE_LINUX_FIRMWARE_AMDGPU=y
+BR2_PACKAGE_LINUX_FIRMWARE_I915=y
+BR2_PACKAGE_LINUX_FIRMWARE_XE=y
+BR2_PACKAGE_LINUX_FIRMWARE_ATHEROS_9271=y
+BR2_PACKAGE_LINUX_FIRMWARE_ATHEROS_10K_QCA9377=y
+BR2_PACKAGE_LINUX_FIRMWARE_ATHEROS_10K_QCA998X=y
+BR2_PACKAGE_LINUX_FIRMWARE_BRCM_BCM43XX=y
+BR2_PACKAGE_LINUX_FIRMWARE_BRCM_BCM43XXX=y
+BR2_PACKAGE_LINUX_FIRMWARE_BRCM_BCM4366B1=y
+BR2_PACKAGE_LINUX_FIRMWARE_BRCM_BCM4366C0=y
+BR2_PACKAGE_LINUX_FIRMWARE_CYPRESS_CYW43XX=y
+BR2_PACKAGE_LINUX_FIRMWARE_CYPRESS_CYW43XXX=y
+BR2_PACKAGE_LINUX_FIRMWARE_CYPRESS_CYW54XXX=y
+BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_100=y
+BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_105=y
+BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_135=y
+BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_1000=y
+BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_2000=y
+BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_2030=y
+BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_22000=y
+BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_22260=y
+BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_3160=y
+BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_3168=y
+BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_3945=y
+BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_4965=y
+BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_5000=y
+BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_6000G2A=y
+BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_6000G2B=y
+BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_7260=y
+BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_7265=y
+BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_7265D=y
+BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_8000C=y
+BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_8265=y
+BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_9XXX=y
+BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_6E=y
+BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_7=y
+BR2_PACKAGE_LINUX_FIRMWARE_IWLWIFI_QUZ=y
+BR2_PACKAGE_LINUX_FIRMWARE_MWIFIEX_PCIE8897=y
+BR2_PACKAGE_LINUX_FIRMWARE_MWIFIEX_PCIEUART8997=y
+BR2_PACKAGE_LINUX_FIRMWARE_MWIFIEX_PCIEUSB8997=y
+BR2_PACKAGE_LINUX_FIRMWARE_MEDIATEK_MT7601U=y
+BR2_PACKAGE_LINUX_FIRMWARE_MEDIATEK_MT7610E=y
+BR2_PACKAGE_LINUX_FIRMWARE_MEDIATEK_MT76X2E=y
+BR2_PACKAGE_LINUX_FIRMWARE_MEDIATEK_MT7921=y
+BR2_PACKAGE_LINUX_FIRMWARE_MEDIATEK_MT7922=y
+BR2_PACKAGE_LINUX_FIRMWARE_MEDIATEK_MT7925=y
+BR2_PACKAGE_LINUX_FIRMWARE_QUALCOMM_6174=y
+BR2_PACKAGE_LINUX_FIRMWARE_QUALCOMM_QCN9274=y
+BR2_PACKAGE_LINUX_FIRMWARE_QUALCOMM_WCN7850=y
+BR2_PACKAGE_LINUX_FIRMWARE_RALINK_RT61=y
+BR2_PACKAGE_LINUX_FIRMWARE_RALINK_RT73=y
+BR2_PACKAGE_LINUX_FIRMWARE_RALINK_RT2XX=y
+BR2_PACKAGE_LINUX_FIRMWARE_RTL_81XX=y
+BR2_PACKAGE_LINUX_FIRMWARE_RTL_87XX=y
+BR2_PACKAGE_LINUX_FIRMWARE_RTL_88XX=y
+BR2_PACKAGE_LINUX_FIRMWARE_RTL_815X=y
+BR2_PACKAGE_LINUX_FIRMWARE_RTL_8169=y
+BR2_PACKAGE_LINUX_FIRMWARE_RTL_RTW88=y
+BR2_PACKAGE_LINUX_FIRMWARE_RTL_RTW89=y
+BR2_PACKAGE_WIRELESS_REGDB=y
+
+# zstd: needed at runtime by the kernel's CONFIG_RD_ZSTD path
+# (initramfs decompression) and by any operator-side tooling.
+BR2_PACKAGE_ZSTD=y
+
+# Some HyperBEAM dependencies and OTP libraries link against libgmp
+# on the v1 LapEE branch. Keep the target runtime complete even when
+# Buildroot's transitive dependency graph does not pull it in.
+BR2_PACKAGE_GMP=y
+
+# ----- LapEE custom packages --------------------------------
+# Cross-compiles HyperBEAM (Erlang code + lapee_tpm_nif) inside
+# Buildroot, against Buildroot's OTP and libtss2. Installs the
+# relx release into /usr/lib/hyperbeam in the target rootfs.
+BR2_PACKAGE_HYPERBEAM=y
+
+# ----- build hygiene ----------------------------------------
+BR2_REPRODUCIBLE=y
+# A fixed SOURCE_DATE_EPOCH so timestamps embedded in built
+# binaries are deterministic across runs. Set to 2026-01-01
+# 00:00:00 UTC. Bump on a new release tag.
+BR2_REPRODUCIBLE_SOURCE_DATE_EPOCH=1735689600
+BR2_ENABLE_DEBUG=n
+BR2_STRIP_strip=y

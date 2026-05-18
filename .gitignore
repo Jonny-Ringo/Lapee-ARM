@@ -1,0 +1,27 @@
+# Local build outputs.
+/ARM/build/
+/build/
+
+# Local operator/runtime secrets.
+/wifi.conf
+/config.json
+/secureboot/
+*.img
+*.img.sha256
+*.img.sig
+
+# Editor and OS noise.
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+.repo-git/
+
+# Python/Erlang temporary output.
+__pycache__/
+*.pyc
+_build/
+erl_crash.dump
