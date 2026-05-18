@@ -39,18 +39,32 @@ git -C "$SRC_DIR" submodule update --init --recursive
 LAPEE_HB_OVERLAY_DIR="$UPSTREAM_ROOT/hyperbeam-overlay" \
     sh "$UPSTREAM_ROOT/scripts/stage-hyperbeam-overlay.sh" "$SRC_DIR"
 
-if [ "${LAPEE_ARM_USE_SYSTEM_REBAR3:-0}" != "1" ]; then
+if [ "${LAPEE_ARM_USE_DOWNLOADED_REBAR3:-0}" = "1" ]; then
     if [ ! -x "$SRC_DIR/rebar3" ]; then
         curl -fsSL https://s3.amazonaws.com/rebar3/rebar3 -o "$SRC_DIR/rebar3"
         chmod +x "$SRC_DIR/rebar3"
     fi
     REBAR="$SRC_DIR/rebar3"
-elif ! command -v rebar3 >/dev/null 2>&1; then
+elif command -v rebar3 >/dev/null 2>&1; then
+    REBAR=rebar3
+else
     curl -fsSL https://s3.amazonaws.com/rebar3/rebar3 -o "$SRC_DIR/rebar3"
     chmod +x "$SRC_DIR/rebar3"
     REBAR="$SRC_DIR/rebar3"
-else
-    REBAR=rebar3
+fi
+
+if ! "$REBAR" version >/dev/null 2>&1; then
+    cat >&2 <<EOF
+Selected rebar3 cannot run on this Erlang/OTP install: $REBAR
+
+If you see a BEAM/version mismatch, the rebar3 escript was built for a newer
+Erlang than the Pi has. Install Raspberry Pi OS rebar3 with:
+  sudo apt-get install -y rebar3
+
+Then retry:
+  LAPEE_ARM_USE_RUSTUP=1 make build
+EOF
+    exit 1
 fi
 
 if [ "${LAPEE_ARM_USE_RUSTUP:-0}" = "1" ] && [ -x "$HOME/.cargo/bin/cargo" ]; then
