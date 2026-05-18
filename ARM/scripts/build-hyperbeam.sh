@@ -30,6 +30,9 @@ if [ ! -d "$SRC_DIR/.git" ]; then
 fi
 
 git -C "$SRC_DIR" fetch --tags origin
+if ! git -C "$SRC_DIR" cat-file -e "$HYPERBEAM_VERSION^{commit}" 2>/dev/null; then
+    git -C "$SRC_DIR" fetch origin "$HYPERBEAM_VERSION"
+fi
 git -C "$SRC_DIR" checkout --detach "$HYPERBEAM_VERSION"
 git -C "$SRC_DIR" submodule update --init --recursive
 
