@@ -71,6 +71,12 @@ The build script:
 3. Stages `../upstream-lapee/hyperbeam-overlay` into the checkout.
 4. Builds `./rebar3 as lapee release` natively for ARM64.
 
+Current HyperBEAM commit pin:
+
+```text
+9f4b0bf709f9e5827f5b45c4d0ca0ca1060e44aa
+```
+
 If the Pi has limited RAM, add swap before building. HyperBEAM and native NIF
 dependencies are not tiny.
 
