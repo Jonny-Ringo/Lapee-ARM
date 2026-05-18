@@ -77,6 +77,24 @@ export DIAGNOSTIC="${DIAGNOSTIC:-1}"
 export CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS:-1}"
 export LAPEE_ARM_STUB_SNP_NIF="${LAPEE_ARM_STUB_SNP_NIF:-1}"
 
+rustc_version=$(rustc --version 2>/dev/null | awk '{print $2}')
+rustc_major=${rustc_version%%.*}
+rustc_rest=${rustc_version#*.}
+rustc_minor=${rustc_rest%%.*}
+if [ -z "$rustc_version" ] || [ "$rustc_major" -lt 1 ] || { [ "$rustc_major" -eq 1 ] && [ "$rustc_minor" -lt 91 ]; }; then
+    cat >&2 <<EOF
+Rust $rustc_version is too old for this HyperBEAM/LapEE build.
+Required: rustc >= 1.91.
+
+On Raspberry Pi OS, install rustup and retry with:
+  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+  . "\$HOME/.cargo/env"
+  rustup default stable
+  LAPEE_ARM_USE_RUSTUP=1 make build
+EOF
+    exit 1
+fi
+
 cd "$SRC_DIR"
 if [ "$LAPEE_ARM_STUB_SNP_NIF" = "1" ] && [ -f src/dev_snp_nif.erl ]; then
     cp src/dev_snp_nif.erl src/dev_snp_nif.erl.lapee-arm.bak

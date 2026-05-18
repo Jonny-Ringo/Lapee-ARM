@@ -91,8 +91,8 @@ On 32-bit Raspberry Pi OS, Cargo/Rust failures are the most likely blocker.
 The build script disables the SEV-SNP Rust NIF by default with
 `LAPEE_ARM_STUB_SNP_NIF=1`, because a stock Pi cannot provide AMD SEV-SNP
 hardware anyway. It also uses one Cargo job by default and prefers the system
-`/usr/bin/cargo`. If Debian's packaged Rust is too old, install rustup and opt
-into it explicitly:
+`/usr/bin/cargo`. Current HyperBEAM dependencies require `rustc >= 1.91`. If
+Debian's packaged Rust is too old, install rustup and opt into it explicitly:
 
 ```sh
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
