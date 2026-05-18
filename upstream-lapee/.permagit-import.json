@@ -1,8 +1,8 @@
 {
   "repo": "lapee",
-  "ref": "refs/heads/main",
-  "refTx": "AsbTwZVGRSN9NLk2b6cruOSgmppBZKsBgnmsAHLjY_g",
-  "commit": "c7c48c2a68b0175a037d92847879b27997e790fa",
-  "snapshotTx": "CyFFs329aCGNndEwd2FNWahMTHnzLAwYxt9xtkpyYKY",
-  "importedFiles": 241
+  "ref": "refs/heads/feat/measurement-snp",
+  "refTx": "laTqo8nS1sdKXIuBeV6BW0LyWmlm8KoyqfBCE7KoJX8",
+  "commit": "9f4b0bf709f9e5827f5b45c4d0ca0ca1060e44aa",
+  "snapshotTx": "jQdpceTvGCO1G5_Qy3U6wIK4EdD743Hk1l9q9hMILWw",
+  "importedFiles": 250
 }

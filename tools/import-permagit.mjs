@@ -5,6 +5,7 @@ import { gunzipSync } from 'node:zlib';
 
 const repo = process.argv[2] || 'lapee';
 const outDir = process.argv[3] || repo;
+const requestedRefOrCommit = process.argv[4] || process.env.PERMAGIT_REF || process.env.PERMAGIT_COMMIT || '';
 const gateway = process.env.ARWEAVE_GATEWAY || 'https://arweave.net';
 const EMPTY_BLOB_SHA = 'e69de29bb2d1d6434b8b29ae775ad8c2e48c5391';
 
@@ -121,10 +122,22 @@ async function main() {
 
   if (!refs.length) throw new Error(`No refs found for repo ${repo}`);
 
-  const chosen = refs.find((ref) => ref.name === 'refs/heads/main')
-    || refs.find((ref) => ref.name?.endsWith('/main'))
-    || refs.find((ref) => ref.name === 'refs/heads/master')
-    || refs[0];
+  const chosen = requestedRefOrCommit
+    ? refs.find((ref) => ref.target === requestedRefOrCommit)
+      || refs.find((ref) => ref.name === requestedRefOrCommit)
+      || refs.find((ref) => ref.name?.endsWith(`/${requestedRefOrCommit}`))
+    : refs.find((ref) => ref.name === 'refs/heads/main')
+      || refs.find((ref) => ref.name?.endsWith('/main'))
+      || refs.find((ref) => ref.name === 'refs/heads/master')
+      || refs[0];
+
+  if (!chosen) {
+    const available = refs
+      .slice(0, 20)
+      .map((ref) => `${ref.name} ${ref.target}`)
+      .join('\n');
+    throw new Error(`No ref found for ${requestedRefOrCommit}. Available refs:\n${available}`);
+  }
 
   if (!chosen.snapshotTx) {
     throw new Error(`Selected ref ${chosen.name} has no Snapshot-Tx; pack import is not implemented here.`);

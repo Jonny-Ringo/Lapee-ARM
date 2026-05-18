@@ -28,7 +28,7 @@
 # Track upstream HyperBEAM edge. LapEE-owned TPM devices and the
 # `lapee' build profile are staged from this repository's
 # hyperbeam-overlay tree during the package pre-build step.
-HYPERBEAM_VERSION ?= 9f4b0bf709f9e5827f5b45c4d0ca0ca1060e44aa
+HYPERBEAM_VERSION ?= c1c07345a9a9f20c1489e7c977098f3fe4054c5c
 HYPERBEAM_SITE = https://github.com/permaweb/HyperBEAM.git
 HYPERBEAM_SITE_METHOD = git
 HYPERBEAM_GIT_SUBMODULES = YES
