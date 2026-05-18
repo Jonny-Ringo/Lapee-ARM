@@ -90,14 +90,15 @@ dependencies are not tiny.
 On 32-bit Raspberry Pi OS, Cargo/Rust failures are the most likely blocker.
 The build script disables the SEV-SNP Rust NIF by default with
 `LAPEE_ARM_STUB_SNP_NIF=1`, because a stock Pi cannot provide AMD SEV-SNP
-hardware anyway. It also uses one Cargo job by default, but if Debian's
-packaged Rust is too old, install rustup and retry:
+hardware anyway. It also uses one Cargo job by default and prefers the system
+`/usr/bin/cargo`. If Debian's packaged Rust is too old, install rustup and opt
+into it explicitly:
 
 ```sh
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
 . "$HOME/.cargo/env"
 rustup default stable
-make build
+LAPEE_ARM_USE_RUSTUP=1 make build
 ```
 
 ## Attestation Status

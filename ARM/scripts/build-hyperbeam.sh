@@ -47,7 +47,7 @@ else
     REBAR=rebar3
 fi
 
-if [ -d "$HOME/.cargo/bin" ]; then
+if [ "${LAPEE_ARM_USE_RUSTUP:-0}" = "1" ] && [ -d "$HOME/.cargo/bin" ]; then
     export PATH="$HOME/.cargo/bin:$PATH"
 fi
 export LAPEE_TSS2_PREFIX="${LAPEE_TSS2_PREFIX:-/usr}"
