@@ -44,13 +44,28 @@ else
 fi
 URL="${URL}?operator=$OPERATOR&devices=$DEVICE_COUNT"
 
+if command -v xset >/dev/null 2>&1; then
+    xset s off -dpms s noblank >/dev/null 2>&1 || true
+fi
+
 FLAGS=(
     --kiosk
+    --no-first-run
     --noerrdialogs
     --disable-infobars
+    --disable-background-networking
+    --disable-component-update
+    --disable-default-apps
+    --disable-extensions
     --disable-gpu
+    --disable-notifications
     --disable-software-rasterizer=false
+    --disable-sync
+    --disable-translate
+    --disable-features=MediaRouter,OptimizationHints,PushMessaging
+    --disable-session-crashed-bubble
     --use-gl=swiftshader
+    --user-data-dir=/tmp/lapee-arm-chromium
     --app="$URL"
 )
 

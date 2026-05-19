@@ -254,6 +254,7 @@
     let footer = 'Starting HyperBEAM.';
     let nodeUrl = `${api}/`;
     let bootAt = performance.now();
+    let lastFrame = 0;
 
     function compact(value) {
       if (!value || value === 'unknown') return 'unknown';
@@ -295,8 +296,12 @@
     function resizeCanvas(canvas, context) {
       const rect = canvas.getBoundingClientRect();
       const dpr = window.devicePixelRatio || 1;
-      canvas.width = Math.max(1, Math.floor(rect.width * dpr));
-      canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+      const width = Math.max(1, Math.floor(rect.width * dpr));
+      const height = Math.max(1, Math.floor(rect.height * dpr));
+      if (canvas.width !== width || canvas.height !== height) {
+        canvas.width = width;
+        canvas.height = height;
+      }
       context.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
@@ -370,7 +375,9 @@
     }
 
     function render(t) {
-      resizeCanvas(stage, ctx);
+      requestAnimationFrame(render);
+      if (t - lastFrame < 83) return;
+      lastFrame = t;
       const rect = stage.getBoundingClientRect();
       const w = rect.width;
       const h = rect.height;
@@ -385,10 +392,10 @@
       }
       drawLaptop(w, h, t);
       drawQr(t);
-      requestAnimationFrame(render);
     }
 
     window.addEventListener('resize', () => resizeCanvas(stage, ctx));
+    resizeCanvas(stage, ctx);
     probe();
     setInterval(probe, 2500);
     requestAnimationFrame(render);
