@@ -24,9 +24,11 @@ and runs it as a systemd service on Raspberry Pi OS.
 ARM/
   Makefile
   config/lapee-arm.json
+  display/index.html
   scripts/install-deps.sh
   scripts/build-hyperbeam.sh
   scripts/run-hyperbeam.sh
+  scripts/run-display.sh
   scripts/install-service.sh
   systemd/lapee-hyperbeam.service
 ```
@@ -58,16 +60,17 @@ curl http://127.0.0.1:8734/~meta@1.0/info
 curl http://127.0.0.1:8734/~system@1.0/all
 ```
 
-The optional `lapee-splash` service installs the original LapEE console splash
-renderer on `/dev/tty2`. Start it manually only after verifying the node:
+The optional local display uses a browser kiosk page with the LapEE console
+look, instead of the upstream appliance TTY renderer. Start it manually only
+after verifying the node:
 
 ```sh
-sudo make display
+make display
 ```
 
-This port intentionally does not enable either service at boot. Use
-`sudo make start` after the Pi has booted, and `sudo make stop` before shutting
-the node down.
+This port intentionally does not enable HyperBEAM at boot. Use `make run` while
+debugging, or `sudo make start` after the Pi has booted when you want the node
+in the background.
 
 If you have no TPM, TPM endpoints are expected to be unavailable or degraded.
 The service sets `LAPEE_TPM_ALLOW_NO_NIF=1` so the overlay can load for

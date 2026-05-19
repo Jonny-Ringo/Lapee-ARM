@@ -32,17 +32,16 @@ if ! REL_DIR=$(find_release_dir); then
     exit 1
 fi
 
-install -d "$INSTALL_PREFIX" "$CONFIG_DIR" /etc/systemd/system
+install -d "$INSTALL_PREFIX" "$INSTALL_PREFIX/bin" "$INSTALL_PREFIX/display" "$CONFIG_DIR" /etc/systemd/system
 rm -rf "$INSTALL_PREFIX/hyperbeam"
 cp -a "$REL_DIR" "$INSTALL_PREFIX/hyperbeam"
 install -m 0644 "$ARM_ROOT/config/lapee-arm.json" "$CONFIG_DIR/lapee-arm.json"
 install -m 0644 "$ARM_ROOT/systemd/lapee-hyperbeam.service" /etc/systemd/system/lapee-hyperbeam.service
-install -d "$INSTALL_PREFIX/splash"
-install -m 0644 "$ARM_ROOT/../upstream-lapee/buildroot-external/board/lapee/files/lapee_splash.erl" \
-    "$INSTALL_PREFIX/splash/lapee_splash.erl"
-erlc -o "$INSTALL_PREFIX/splash" "$INSTALL_PREFIX/splash/lapee_splash.erl"
-install -m 0644 "$ARM_ROOT/systemd/lapee-splash.service" /etc/systemd/system/lapee-splash.service
+install -m 0755 "$ARM_ROOT/scripts/run-display.sh" "$INSTALL_PREFIX/bin/lapee-display"
+install -m 0644 "$ARM_ROOT/display/index.html" "$INSTALL_PREFIX/display/index.html"
+systemctl disable --now lapee-splash.service 2>/dev/null || true
+rm -f /etc/systemd/system/lapee-splash.service
 
 systemctl daemon-reload
 echo "Installed. Start manually with: systemctl start lapee-hyperbeam"
-echo "Optional display on tty2: systemctl start lapee-splash"
+echo "Optional display: make display"

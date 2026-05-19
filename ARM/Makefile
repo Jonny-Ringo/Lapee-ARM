@@ -18,7 +18,7 @@ help:
 	  '  make run        Run the built node in the foreground' \
 	  '  sudo make install   Install runtime and systemd unit' \
 	  '  sudo make start     Start HyperBEAM for this boot only' \
-	  '  sudo make display   Start the local display on tty2' \
+	  '  make display    Open the local browser display' \
 	  '  sudo make stop      Stop the display and node' \
 	  '  make status     Show service status' \
 	  '  make clean      Remove ARM/build only'
@@ -43,16 +43,15 @@ start:
 	systemctl start lapee-hyperbeam.service
 
 display:
-	systemctl start lapee-splash.service
-	-command -v chvt >/dev/null 2>&1 && chvt 2
+	bash ./scripts/run-display.sh
 
 stop:
-	-systemctl stop lapee-splash.service
 	-systemctl stop lapee-hyperbeam.service
+	-pkill -f '/opt/lapee-arm/display/index.html'
+	-pkill -f 'ARM/display/index.html'
 
 status:
 	systemctl status lapee-hyperbeam.service --no-pager
-	-systemctl status lapee-splash.service --no-pager
 
 clean:
 	rm -rf "$(BUILD_DIR)"
