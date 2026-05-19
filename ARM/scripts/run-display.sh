@@ -17,7 +17,7 @@ fi
 
 BROWSER="${LAPEE_BROWSER:-}"
 if [ -z "$BROWSER" ]; then
-    for candidate in chromium-browser chromium google-chrome; do
+    for candidate in chromium chromium-browser google-chrome; do
         if command -v "$candidate" >/dev/null 2>&1; then
             BROWSER="$candidate"
             break
@@ -28,7 +28,7 @@ fi
 if [ -z "$BROWSER" ]; then
     cat >&2 <<EOF
 No browser found. Install Chromium on Raspberry Pi OS:
-  sudo apt-get install -y chromium-browser
+  sudo apt-get install -y chromium
 EOF
     exit 1
 fi
@@ -36,11 +36,21 @@ fi
 URL="file://$DISPLAY_FILE"
 export DISPLAY="${DISPLAY:-:0}"
 
+FLAGS=(
+    --kiosk
+    --noerrdialogs
+    --disable-infobars
+    --disable-gpu
+    --disable-software-rasterizer=false
+    --use-gl=swiftshader
+    --app="$URL"
+)
+
 if [ -n "${SUDO_USER:-}" ] && [ "$SUDO_USER" != "root" ]; then
     USER_HOME=$(getent passwd "$SUDO_USER" | cut -d: -f6)
     export XAUTHORITY="${XAUTHORITY:-$USER_HOME/.Xauthority}"
     exec sudo -u "$SUDO_USER" env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" \
-        "$BROWSER" --kiosk --noerrdialogs --disable-infobars --app="$URL"
+        "$BROWSER" "${FLAGS[@]}"
 fi
 
-exec "$BROWSER" --kiosk --noerrdialogs --disable-infobars --app="$URL"
+exec "$BROWSER" "${FLAGS[@]}"
