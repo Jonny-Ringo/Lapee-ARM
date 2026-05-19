@@ -42,6 +42,19 @@ if [ -f "$CONFIG" ]; then
 else
     DEVICE_COUNT=0
 fi
+if [ "$OPERATOR" = "unknown" ] && command -v journalctl >/dev/null 2>&1; then
+    for _ in 1 2 3 4 5; do
+        OPERATOR=$(
+            journalctl -u lapee-hyperbeam -n 120 --no-pager 2>/dev/null |
+                sed -n 's/.*Operator:[[:space:]]*//p' |
+                awk 'NF {print $1}' |
+                tail -n 1
+        )
+        [ -n "$OPERATOR" ] && break
+        sleep 1
+    done
+    OPERATOR="${OPERATOR:-unknown}"
+fi
 URL="${URL}?operator=$OPERATOR&devices=$DEVICE_COUNT"
 
 if command -v xset >/dev/null 2>&1; then

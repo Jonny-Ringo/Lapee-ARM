@@ -274,10 +274,9 @@
     async function probe() {
       try {
         const res = await fetch(`${api}/~meta@1.0/info`, {
-          method: 'HEAD',
+          method: 'OPTIONS',
           cache: 'no-store'
         });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         setState('READY', true);
         footer = `Running at ${nodeUrl}`;
         operatorEl.textContent = `operator: ${compact(operatorParam)}`;
