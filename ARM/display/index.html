@@ -239,6 +239,7 @@
     const params = new URLSearchParams(window.location.search);
     const deviceCount = params.get('devices') || '64';
     const operatorParam = params.get('operator') || 'unknown';
+    let operatorValue = operatorParam;
     const stateEl = document.getElementById('state');
     const badgeEl = document.getElementById('badge');
     const operatorEl = document.getElementById('operator');
@@ -261,6 +262,16 @@
       return value.length > 11 ? `${value.slice(0, 9)}...` : value;
     }
 
+    function operatorFromText(text) {
+      const match = String(text || '').match(/[A-Za-z0-9_-]{43}/);
+      return match ? match[0] : '';
+    }
+
+    function updateOperator(value) {
+      if (value && value !== 'unknown') operatorValue = value;
+      operatorEl.textContent = `operator: ${compact(operatorValue)}`;
+    }
+
     function setState(text, ok) {
       ready = ok;
       stateEl.textContent = text;
@@ -279,17 +290,38 @@
         });
         setState('READY', true);
         footer = `Running at ${nodeUrl}`;
-        operatorEl.textContent = `operator: ${compact(operatorParam)}`;
+        updateOperator(operatorValue);
         devicesEl.textContent = `devices: ${deviceCount} preloaded`;
       } catch (err) {
         const secs = Math.floor((performance.now() - bootAt) / 1000);
         setState('HB STARTING', false);
         footer = `Starting HyperBEAM. 127.0.0.1 (${secs}s)`;
-        operatorEl.textContent = `operator: ${compact(operatorParam)}`;
+        updateOperator(operatorValue);
         devicesEl.textContent = `devices: ${deviceCount} preloaded`;
       }
       footerEl.textContent = footer;
       urlEl.textContent = nodeUrl;
+    }
+
+    async function refreshOperator() {
+      if (operatorValue && operatorValue !== 'unknown') {
+        updateOperator(operatorValue);
+        return;
+      }
+      try {
+        const res = await fetch(`${api}/~meta@1.0/info/address`, {
+          method: 'GET',
+          cache: 'no-store',
+          headers: {
+            accept: 'application/json',
+            'accept-bundle': 'true'
+          }
+        });
+        const text = await res.text();
+        updateOperator(operatorFromText(text));
+      } catch (err) {
+        updateOperator(operatorValue);
+      }
     }
 
     function resizeCanvas(canvas, context) {
@@ -396,7 +428,9 @@
     window.addEventListener('resize', () => resizeCanvas(stage, ctx));
     resizeCanvas(stage, ctx);
     probe();
+    refreshOperator();
     setInterval(probe, 2500);
+    setInterval(refreshOperator, 5000);
     requestAnimationFrame(render);
   </script>
 </body>

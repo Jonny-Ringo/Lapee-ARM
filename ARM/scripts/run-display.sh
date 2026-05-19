@@ -36,6 +36,7 @@ fi
 URL="file://$DISPLAY_FILE"
 export DISPLAY="${DISPLAY:-:0}"
 OPERATOR="${LAPEE_OPERATOR:-unknown}"
+BASE_URL="${LAPEE_BASE_URL:-http://127.0.0.1:8734}"
 CONFIG="${LAPEE_CONFIG:-/etc/lapee-arm/lapee-arm.json}"
 PROFILE_DIR="${LAPEE_CHROMIUM_PROFILE:-/tmp/lapee-arm-chromium}"
 DISPLAY_LOG="${LAPEE_DISPLAY_LOG:-/tmp/lapee-arm-display.log}"
@@ -44,6 +45,38 @@ if [ -f "$CONFIG" ]; then
 else
     DEVICE_COUNT=0
 fi
+
+find_operator_from_node() {
+    if ! command -v curl >/dev/null 2>&1; then
+        return 1
+    fi
+
+    curl -fsS --max-time 4 \
+        -H 'accept: application/json' \
+        -H 'accept-bundle: true' \
+        "$BASE_URL/~meta@1.0/info/address" 2>/dev/null |
+        grep -Eo '[A-Za-z0-9_-]{43}' |
+        head -n 1 && return 0
+
+    curl -fsS --max-time 8 \
+        -D - -o /dev/null \
+        -H 'accept: application/json' \
+        -H 'accept-bundle: true' \
+        "$BASE_URL/~meta@1.0/info" 2>/dev/null |
+        awk -F': ' 'tolower($1) == "address" { gsub(/\r/, "", $2); print $2; exit }' |
+        grep -Eo '[A-Za-z0-9_-]{43}' |
+        head -n 1
+}
+
+if [ "$OPERATOR" = "unknown" ]; then
+    for _ in 1 2 3 4 5 6 7 8; do
+        OPERATOR="$(find_operator_from_node || true)"
+        [ -n "$OPERATOR" ] && break
+        sleep 1
+    done
+    OPERATOR="${OPERATOR:-unknown}"
+fi
+
 if [ "$OPERATOR" = "unknown" ] && command -v journalctl >/dev/null 2>&1; then
     for _ in 1 2 3 4 5; do
         OPERATOR=$(
