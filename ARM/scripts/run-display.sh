@@ -68,7 +68,7 @@ find_operator_from_node() {
         head -n 1
 }
 
-if [ "$OPERATOR" = "unknown" ]; then
+if [ "$OPERATOR" = "unknown" ] && [ "${LAPEE_DISPLAY_DETACH:-0}" != "1" ]; then
     for _ in 1 2 3 4 5 6 7 8; do
         OPERATOR="$(find_operator_from_node || true)"
         [ -n "$OPERATOR" ] && break
@@ -77,7 +77,7 @@ if [ "$OPERATOR" = "unknown" ]; then
     OPERATOR="${OPERATOR:-unknown}"
 fi
 
-if [ "$OPERATOR" = "unknown" ] && command -v journalctl >/dev/null 2>&1; then
+if [ "$OPERATOR" = "unknown" ] && [ "${LAPEE_DISPLAY_DETACH:-0}" != "1" ] && command -v journalctl >/dev/null 2>&1; then
     for _ in 1 2 3 4 5; do
         OPERATOR=$(
             journalctl -u lapee-hyperbeam -n 120 --no-pager 2>/dev/null |
