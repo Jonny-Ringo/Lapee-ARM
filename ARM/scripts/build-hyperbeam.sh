@@ -39,6 +39,14 @@ git -C "$SRC_DIR" submodule update --init --recursive
 LAPEE_HB_OVERLAY_DIR="$UPSTREAM_ROOT/hyperbeam-overlay" \
     sh "$UPSTREAM_ROOT/scripts/stage-hyperbeam-overlay.sh" "$SRC_DIR"
 
+if [ ! -f "$SRC_DIR/config.flat" ]; then
+    cat > "$SRC_DIR/config.flat" <<'EOF'
+mode: debug
+port: 8734
+render_index_page: false
+EOF
+fi
+
 if [ "${LAPEE_ARM_USE_DOWNLOADED_REBAR3:-0}" = "1" ]; then
     if [ ! -x "$SRC_DIR/rebar3" ]; then
         curl -fsSL https://s3.amazonaws.com/rebar3/rebar3 -o "$SRC_DIR/rebar3"
