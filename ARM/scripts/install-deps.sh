@@ -16,6 +16,8 @@ $SUDO apt-get update
 $SUDO apt-get install -y \
     build-essential \
     ca-certificates \
+    clang \
+    cmake \
     curl \
     git \
     erlang \
@@ -23,10 +25,12 @@ $SUDO apt-get install -y \
     erlang-os-mon \
     erlang-ssl \
     erlang-tools \
+    libclang-dev \
     libssl-dev \
     libgmp-dev \
     libtss2-dev \
     pkg-config \
+    protobuf-compiler \
     python3 \
     rebar3 \
     rustc \
