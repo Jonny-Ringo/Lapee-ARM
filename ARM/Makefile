@@ -8,7 +8,7 @@ CONFIG_DIR ?= /etc/lapee-arm
 
 export ARM_ROOT UPSTREAM_ROOT BUILD_DIR INSTALL_PREFIX CONFIG_DIR
 
-.PHONY: help deps build run install service start start-node stop status display clean
+.PHONY: help deps build run install service start start-node stop status smoke display clean
 
 help:
 	@printf '%s\n' \
@@ -22,6 +22,7 @@ help:
 	  '  make display    Open the local browser display' \
 	  '  sudo make stop      Stop the display and node' \
 	  '  make status     Show service status' \
+	  '  make smoke      Run basic HTTP + AO device GET checks' \
 	  '  make clean      Remove ARM/build only'
 
 deps:
@@ -59,6 +60,9 @@ stop:
 
 status:
 	systemctl status lapee-hyperbeam.service --no-pager
+
+smoke:
+	bash ./scripts/smoke-test.sh
 
 clean:
 	rm -rf "$(BUILD_DIR)"

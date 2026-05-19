@@ -56,9 +56,23 @@ Then check:
 
 ```sh
 systemctl status lapee-hyperbeam
-curl http://127.0.0.1:8734/~meta@1.0/info
-curl http://127.0.0.1:8734/~system@1.0/all
+make smoke
 ```
+
+For manual checks, use `OPTIONS /~meta@1.0/info` only as a cheap server-alive
+probe. Use `GET /~system@1.0/info` or `GET /~system@1.0/all` to verify real
+HyperBEAM device dispatch:
+
+```sh
+curl -i -X OPTIONS http://127.0.0.1:8734/~meta@1.0/info
+curl -i -H 'accept: application/json' -H 'accept-bundle: true' \
+  http://127.0.0.1:8734/~system@1.0/info
+curl -i -H 'accept: application/json' -H 'accept-bundle: true' \
+  http://127.0.0.1:8734/~system@1.0/all
+```
+
+`GET /~meta@1.0/info` can currently fail on ARM with a lazy-link cache
+serialization error even while the node is alive and other device GETs work.
 
 The optional local display uses a browser kiosk page with the LapEE console
 look, instead of the upstream appliance TTY renderer. Start it manually only
