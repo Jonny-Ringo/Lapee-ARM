@@ -3,19 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>LapEE ARM Console</title>
+  <title>LapEE ARM Display</title>
   <style>
     :root {
       color-scheme: dark;
-      --bg: #07131f;
-      --panel: #0c2031;
-      --ink: #e9fbff;
-      --muted: #8fb7c7;
-      --blue: #55b8ff;
-      --cyan: #5ff3ff;
-      --green: #8dffb4;
-      --warn: #ffd166;
-      --bad: #ff6b7a;
+      --bg: #15123a;
+      --ink: #f8fbff;
+      --muted: #a9c8de;
+      --line: #73d9ff;
+      --ok: #9cffbd;
+      --warn: #ffe08a;
+      --panel: rgba(0, 20, 46, 0.36);
     }
 
     * { box-sizing: border-box; }
@@ -27,250 +25,245 @@
       overflow: hidden;
       background: var(--bg);
       color: var(--ink);
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      font-family: "Liberation Mono", "DejaVu Sans Mono", Consolas, monospace;
       letter-spacing: 0;
     }
 
     body {
+      background:
+        repeating-linear-gradient(0deg, rgba(255,255,255,0.08) 0, rgba(255,255,255,0.08) 1px, transparent 1px, transparent 5px),
+        linear-gradient(180deg, #2456b8 0%, #171343 68%, #0f0d2c 100%);
+    }
+
+    .screen {
+      width: 100vw;
+      height: 100vh;
+      display: grid;
+      grid-template-columns: 51% 49%;
+      gap: 10px;
+      padding: 12px 14px 10px;
+    }
+
+    .left {
+      min-width: 0;
       display: grid;
       grid-template-rows: auto 1fr auto;
-      background:
-        linear-gradient(180deg, rgba(85,184,255,0.09), transparent 38%),
-        repeating-linear-gradient(0deg, rgba(255,255,255,0.035) 0, rgba(255,255,255,0.035) 1px, transparent 1px, transparent 4px),
-        var(--bg);
+      gap: 8px;
     }
 
-    header, footer {
-      padding: 18px 28px;
-      border-color: rgba(95,243,255,0.28);
-    }
-
-    header {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 18px;
-      border-bottom: 1px solid rgba(95,243,255,0.28);
-      background: rgba(7,19,31,0.84);
-    }
-
-    .brand {
-      display: flex;
-      flex-direction: column;
-      gap: 5px;
-      min-width: 0;
-    }
-
-    .brand strong {
-      font-size: 22px;
-      line-height: 1.1;
+    .title {
+      margin: 0;
+      overflow: hidden;
       color: var(--ink);
+      font-size: 13px;
+      line-height: 1.04;
+      white-space: pre;
+      text-shadow: 0 0 8px rgba(248,251,255,0.28);
     }
 
-    .brand span, .meta {
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.35;
+    .proof {
+      min-height: 0;
+      display: grid;
+      grid-template-columns: auto 1fr;
+      gap: 12px;
+      align-content: center;
+      padding: 10px;
+      border: 1px solid rgba(248,251,255,0.36);
+      background: var(--panel);
     }
 
-    .state {
+    #qr {
+      width: 132px;
+      height: 132px;
+      image-rendering: pixelated;
+      background: rgba(248,251,255,0.06);
+    }
+
+    .proof-copy {
+      min-width: 0;
       display: grid;
       align-content: center;
-      justify-items: end;
-      gap: 4px;
-      min-width: 180px;
+      gap: 7px;
+      font-size: 13px;
+      line-height: 1.2;
     }
 
-    .pill {
-      min-width: 112px;
-      padding: 7px 12px;
-      border: 1px solid rgba(141,255,180,0.55);
-      background: rgba(141,255,180,0.09);
-      color: var(--green);
-      text-align: center;
+    .proof-copy strong {
+      color: var(--ok);
+      font-size: 15px;
+    }
+
+    .proof-copy span {
+      overflow: hidden;
+      color: var(--muted);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .footer {
+      overflow: hidden;
+      padding: 8px 10px;
+      border: 1px solid rgba(248,251,255,0.30);
+      background: rgba(0,0,0,0.12);
+      color: var(--ink);
       font-size: 14px;
-      font-weight: 700;
+      line-height: 1.2;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
-    main {
+    .right {
+      min-width: 0;
       position: relative;
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 330px;
-      gap: 22px;
-      padding: 22px 28px;
-      min-height: 0;
+      grid-template-rows: auto 1fr auto;
+      gap: 8px;
+    }
+
+    .status-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+      min-width: 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .badge {
+      min-width: 96px;
+      padding: 5px 8px;
+      border: 1px solid rgba(156,255,189,0.62);
+      color: var(--ok);
+      text-align: center;
+      font-weight: 700;
     }
 
     #stage {
       width: 100%;
       height: 100%;
-      min-height: 360px;
-      border: 1px solid rgba(95,243,255,0.22);
-      background: radial-gradient(circle at 50% 35%, rgba(85,184,255,0.16), transparent 45%), rgba(12,32,49,0.44);
-    }
-
-    aside {
-      display: grid;
-      grid-template-rows: auto auto 1fr;
-      gap: 14px;
-      min-width: 0;
-    }
-
-    .panel {
-      border: 1px solid rgba(95,243,255,0.24);
-      background: rgba(12,32,49,0.58);
-      padding: 16px;
-    }
-
-    h2 {
-      margin: 0 0 12px;
-      color: var(--cyan);
-      font-size: 14px;
-      font-weight: 700;
-    }
-
-    .kv {
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr);
-      gap: 8px 12px;
-      font-size: 13px;
-      line-height: 1.35;
-    }
-
-    .kv div:nth-child(odd) { color: var(--muted); }
-    .kv div:nth-child(even) {
-      overflow: hidden;
-      color: var(--ink);
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .log {
       min-height: 0;
-      overflow: hidden;
-      color: var(--muted);
-      font-size: 13px;
-      line-height: 1.45;
-    }
-
-    .log div {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    footer {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 18px;
-      border-top: 1px solid rgba(95,243,255,0.28);
-      background: rgba(7,19,31,0.84);
-      font-size: 15px;
-      color: var(--ink);
     }
 
     .url {
       overflow: hidden;
-      color: var(--cyan);
+      color: var(--ok);
+      font-size: 16px;
+      line-height: 1.2;
+      text-align: center;
       text-overflow: ellipsis;
       white-space: nowrap;
+      text-shadow: 0 0 8px rgba(156,255,189,0.32);
     }
 
-    @media (max-width: 820px) {
-      main {
-        grid-template-columns: 1fr;
-        grid-template-rows: 1fr auto;
+    @media (max-width: 900px), (max-height: 520px) {
+      .screen {
+        gap: 8px;
+        padding: 8px 10px 7px;
       }
-      aside {
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: auto;
+      .title {
+        font-size: 10px;
       }
-      .log { display: none; }
+      .proof {
+        gap: 8px;
+        padding: 7px;
+      }
+      #qr {
+        width: 96px;
+        height: 96px;
+      }
+      .proof-copy {
+        font-size: 11px;
+        gap: 5px;
+      }
+      .proof-copy strong {
+        font-size: 12px;
+      }
+      .footer, .url {
+        font-size: 12px;
+      }
+      .status-row {
+        font-size: 11px;
+      }
+      .badge {
+        min-width: 84px;
+        padding: 4px 6px;
+      }
     }
   </style>
 </head>
 <body>
-  <header>
-    <div class="brand">
-      <strong>LapEE / live attestation console</strong>
-      <span>Raspberry Pi ARM64 node display</span>
-    </div>
-    <div class="state">
-      <div class="pill" id="state">BOOTING</div>
-      <div class="meta" id="clock">--:--:--</div>
-    </div>
-  </header>
+  <div class="screen">
+    <section class="left">
+      <pre class="title">██╗  ██╗██╗   ██╗██████╗ ███████╗██████╗
+██║  ██║╚██╗ ██╔╝██╔══██╗██╔════╝██╔══██╗
+███████║ ╚████╔╝ ██████╔╝█████╗  ██████╔╝
+██╔══██║  ╚██╔╝  ██╔═══╝ ██╔══╝  ██╔══██╗
+██║  ██║   ██║   ██║     ███████╗██║  ██║
+╚═╝  ╚═╝   ╚═╝   ╚═╝     ╚══════╝╚═╝  ╚═╝
 
-  <main>
-    <canvas id="stage" aria-label="Animated LapEE node display"></canvas>
-    <aside>
-      <section class="panel">
-        <h2>NODE</h2>
-        <div class="kv">
-          <div>URL</div><div id="node-url">http://127.0.0.1:8734/</div>
-          <div>HTTP</div><div id="http-state">probing</div>
-          <div>Operator</div><div id="operator">unknown</div>
-          <div>Devices</div><div id="devices">unknown</div>
-        </div>
-      </section>
-      <section class="panel">
-        <h2>ARM PORT</h2>
-        <div class="kv">
-          <div>Mode</div><div>non-attested</div>
-          <div>Runtime</div><div>HyperBEAM foreground</div>
-          <div>Display</div><div>local kiosk</div>
-        </div>
-      </section>
-      <section class="panel log" id="log">
-        <h2>EVENTS</h2>
-      </section>
-    </aside>
-  </main>
+██████╗ ███████╗ █████╗ ███╗   ███╗
+██╔══██╗██╔════╝██╔══██╗████╗ ████║
+██████╔╝█████╗  ███████║██╔████╔██║
+██╔══██╗██╔══╝  ██╔══██║██║╚██╔╝██║
+██████╔╝███████╗██║  ██║██║ ╚═╝ ██║
+╚═════╝ ╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝</pre>
 
-  <footer>
-    <div id="footer-text">Starting LapEE.</div>
-    <div class="url" id="footer-url">http://127.0.0.1:8734/</div>
-  </footer>
+      <div class="proof">
+        <canvas id="qr" width="132" height="132" aria-label="Node URL QR visual"></canvas>
+        <div class="proof-copy">
+          <strong id="state">BOOTING</strong>
+          <span id="operator">operator: unknown</span>
+          <span id="devices">devices: loading</span>
+          <span>mode: LAPEE ARM</span>
+          <span>net : dhcp -> node</span>
+          <span>out : local display</span>
+        </div>
+      </div>
+
+      <div class="footer" id="footer">Starting LapEE.</div>
+    </section>
+
+    <section class="right">
+      <div class="status-row">
+        <div>LapEE / live attestation console</div>
+        <div class="badge" id="badge">BOOTING</div>
+      </div>
+      <canvas id="stage" aria-label="Rotating wireframe laptop"></canvas>
+      <div class="url" id="url">http://127.0.0.1:8734/</div>
+    </section>
+  </div>
 
   <script>
     const api = 'http://127.0.0.1:8734';
     const stateEl = document.getElementById('state');
-    const httpStateEl = document.getElementById('http-state');
+    const badgeEl = document.getElementById('badge');
     const operatorEl = document.getElementById('operator');
     const devicesEl = document.getElementById('devices');
-    const footerEl = document.getElementById('footer-text');
-    const footerUrlEl = document.getElementById('footer-url');
-    const nodeUrlEl = document.getElementById('node-url');
-    const logEl = document.getElementById('log');
-    const clockEl = document.getElementById('clock');
-    const canvas = document.getElementById('stage');
-    const ctx = canvas.getContext('2d');
-    const logs = [];
+    const footerEl = document.getElementById('footer');
+    const urlEl = document.getElementById('url');
+    const stage = document.getElementById('stage');
+    const qr = document.getElementById('qr');
+    const ctx = stage.getContext('2d');
+    const qx = qr.getContext('2d');
+
     let ready = false;
-    let lastStatus = 'BOOTING';
-    let phaseText = 'Starting HyperBEAM.';
-
-    function addLog(text) {
-      const stamp = new Date().toLocaleTimeString();
-      logs.unshift(`[${stamp}] ${text}`);
-      while (logs.length > 12) logs.pop();
-      logEl.querySelectorAll('div').forEach((el) => el.remove());
-      logs.forEach((line) => {
-        const div = document.createElement('div');
-        div.textContent = line;
-        logEl.appendChild(div);
-      });
-    }
-
-    function setState(text, ok) {
-      lastStatus = text;
-      stateEl.textContent = text;
-      stateEl.style.color = ok ? 'var(--green)' : 'var(--warn)';
-      stateEl.style.borderColor = ok ? 'rgba(141,255,180,0.55)' : 'rgba(255,209,102,0.6)';
-      stateEl.style.background = ok ? 'rgba(141,255,180,0.09)' : 'rgba(255,209,102,0.09)';
-    }
+    let footer = 'Starting HyperBEAM.';
+    let nodeUrl = `${api}/`;
+    let bootAt = performance.now();
 
     function readPath(obj, path) {
       return path.reduce((value, key) => value && value[key], obj);
+    }
+
+    function setState(text, ok) {
+      ready = ok;
+      stateEl.textContent = text;
+      badgeEl.textContent = text;
+      const color = ok ? 'var(--ok)' : 'var(--warn)';
+      stateEl.style.color = color;
+      badgeEl.style.color = color;
+      badgeEl.style.borderColor = ok ? 'rgba(156,255,189,0.62)' : 'rgba(255,224,138,0.62)';
     }
 
     async function probe() {
@@ -279,132 +272,128 @@
           headers: { accept: 'application/json', 'accept-bundle': 'true' },
           cache: 'no-store'
         });
-        httpStateEl.textContent = `${res.status} ${res.statusText || ''}`.trim();
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const json = await res.json();
-        ready = true;
         setState('READY', true);
-        phaseText = `Running at ${api}/`;
-        footerEl.textContent = phaseText;
-        footerUrlEl.textContent = `${api}/`;
-        nodeUrlEl.textContent = `${api}/`;
+        footer = `Running at ${nodeUrl}`;
         const operator =
           readPath(json, ['body', 'operator']) ||
           readPath(json, ['operator']) ||
           readPath(json, ['body', 'address']) ||
           'available';
-        operatorEl.textContent = String(operator);
+        operatorEl.textContent = `operator: ${String(operator).slice(0, 34)}`;
         const preloaded = readPath(json, ['body', 'preloaded-devices']) || readPath(json, ['preloaded-devices']);
-        devicesEl.textContent = Array.isArray(preloaded) ? String(preloaded.length) : 'loaded';
+        devicesEl.textContent = Array.isArray(preloaded) ? `devices: ${preloaded.length} preloaded` : 'devices: loaded';
       } catch (err) {
-        ready = false;
+        const secs = Math.floor((performance.now() - bootAt) / 1000);
         setState('HB STARTING', false);
-        httpStateEl.textContent = err.message;
-        phaseText = 'Starting HyperBEAM.';
-        footerEl.textContent = phaseText;
+        footer = `Starting HyperBEAM. 127.0.0.1 (${secs}s)`;
+        operatorEl.textContent = 'operator: waiting';
+        devicesEl.textContent = `probe: ${err.message}`;
       }
-      addLog(`${lastStatus}: ${httpStateEl.textContent}`);
+      footerEl.textContent = footer;
+      urlEl.textContent = nodeUrl;
     }
 
-    function resize() {
+    function resizeCanvas(canvas, context) {
       const rect = canvas.getBoundingClientRect();
-      const scale = window.devicePixelRatio || 1;
-      canvas.width = Math.max(1, Math.floor(rect.width * scale));
-      canvas.height = Math.max(1, Math.floor(rect.height * scale));
-      ctx.setTransform(scale, 0, 0, scale, 0, 0);
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.max(1, Math.floor(rect.width * dpr));
+      canvas.height = Math.max(1, Math.floor(rect.height * dpr));
+      context.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    function line(points, color, width = 1) {
+    function line(points, color, width) {
       ctx.strokeStyle = color;
       ctx.lineWidth = width;
       ctx.beginPath();
-      points.forEach(([x, y], i) => i ? ctx.lineTo(x, y) : ctx.moveTo(x, y));
+      for (let i = 0; i < points.length; i++) {
+        const [x, y] = points[i];
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
       ctx.stroke();
     }
 
     function drawLaptop(w, h, t) {
-      const cx = w * 0.48;
-      const cy = h * 0.52;
-      const s = Math.min(w, h) * 0.34;
-      const yaw = Math.sin(t * 0.0012) * 0.42;
-      const lid = 1.0 + Math.min(0.8, t * 0.00008);
-      const color = ready ? 'rgba(95,243,255,0.92)' : 'rgba(255,209,102,0.88)';
-      const dim = 'rgba(143,183,199,0.34)';
+      const color = ready ? 'rgba(248,251,255,0.95)' : 'rgba(248,251,255,0.78)';
+      const accent = ready ? 'rgba(156,255,189,0.82)' : 'rgba(255,224,138,0.70)';
+      const yaw = t * 0.00105;
+      const lid = Math.min(1.85, 0.7 + t * 0.00012);
+      const scale = Math.max(54, Math.min(w / 4.05, (h - 12) / 1.9));
+      const xc = w * 0.56;
+      const yc = h * 0.69;
+      const edges = laptopEdges(lid);
 
-      function p(x, y, z) {
-        const x2 = x * Math.cos(yaw) - z * Math.sin(yaw);
-        const z2 = x * Math.sin(yaw) + z * Math.cos(yaw);
-        const k = 1 / (1 + z2 * 0.55);
-        return [cx + x2 * s * k, cy + y * s * k];
+      function rotate([x, y, z]) {
+        const ca = Math.cos(yaw), sa = Math.sin(yaw);
+        return [x * ca + z * sa, y, -x * sa + z * ca];
       }
 
-      const base = [
-        p(-1.1, 0.35, -0.45), p(1.1, 0.35, -0.45),
-        p(0.82, 0.55, 0.35), p(-0.82, 0.55, 0.35), p(-1.1, 0.35, -0.45)
-      ];
-      const hingeL = p(-0.82, 0.35, -0.42);
-      const hingeR = p(0.82, 0.35, -0.42);
-      const topL = p(-0.82, 0.35 - Math.sin(lid) * 1.12, -0.42 - Math.cos(lid) * 0.78);
-      const topR = p(0.82, 0.35 - Math.sin(lid) * 1.12, -0.42 - Math.cos(lid) * 0.78);
-      const backR = p(0.66, 0.35 - Math.sin(lid) * 0.92, -0.42 - Math.cos(lid) * 0.66);
-      const backL = p(-0.66, 0.35 - Math.sin(lid) * 0.92, -0.42 - Math.cos(lid) * 0.66);
+      function project(p) {
+        const [x, y, z] = rotate(p);
+        const tilt = -0.82;
+        const ct = Math.cos(tilt), st = Math.sin(tilt);
+        const yt = y * ct - z * st;
+        return [xc + x * scale, yc - yt * scale * 0.5];
+      }
 
-      line(base, color, 2);
-      line([hingeL, topL, topR, hingeR], color, 2);
-      line([backL, backR], dim, 1);
-      line([hingeL, hingeR], 'rgba(141,255,180,0.75)', 2);
-      line([p(-0.58, 0.42, -0.18), p(0.58, 0.42, -0.18), p(0.36, 0.48, 0.12), p(-0.36, 0.48, 0.12), p(-0.58, 0.42, -0.18)], dim, 1);
+      for (const [a, b, kind] of edges) {
+        line([project(a), project(b)], kind === 'hinge' ? accent : color, kind === 'hinge' ? 2.4 : 1.7);
+      }
     }
 
-    function drawQr(w, h, t) {
-      const url = `${api}/`;
-      const size = Math.min(132, Math.max(82, w * 0.16));
-      const x0 = w - size - 30;
-      const y0 = h - size - 30;
-      const cells = 21;
-      const cell = size / cells;
-      ctx.fillStyle = 'rgba(233,251,255,0.06)';
-      ctx.fillRect(x0 - 8, y0 - 8, size + 16, size + 16);
-      ctx.fillStyle = ready ? 'rgba(95,243,255,0.92)' : 'rgba(143,183,199,0.48)';
+    function laptopEdges(lid) {
+      const baseTop = [[-2, 0, -1.5], [2, 0, -1.5], [2, 0, 1.5], [-2, 0, 1.5]];
+      const baseBottom = [[2, -0.22, 1.5], [-2, -0.22, 1.5]];
+      const lidBottom = [[-2, 0, -1.5], [2, 0, -1.5]];
+      const lidTop = [[-2, Math.sin(lid) * 2.5, -1.5 - Math.cos(lid) * 2.5], [2, Math.sin(lid) * 2.5, -1.5 - Math.cos(lid) * 2.5]];
+      return [
+        [baseTop[0], baseTop[1]], [baseTop[1], baseTop[2]], [baseTop[2], baseTop[3]], [baseTop[3], baseTop[0]],
+        [baseTop[2], baseBottom[0]], [baseTop[3], baseBottom[1]], [baseBottom[0], baseBottom[1]],
+        [lidBottom[0], lidBottom[1], 'hinge'], [lidBottom[0], lidTop[0]], [lidTop[0], lidTop[1]], [lidTop[1], lidBottom[1]]
+      ];
+    }
+
+    function drawQr(t) {
+      const w = qr.width;
+      const cells = 25;
+      const cell = Math.floor(w / cells);
+      qx.clearRect(0, 0, w, w);
+      qx.fillStyle = 'rgba(248,251,255,0.08)';
+      qx.fillRect(0, 0, w, w);
+      qx.fillStyle = ready ? 'rgba(248,251,255,0.92)' : 'rgba(169,200,222,0.72)';
       for (let y = 0; y < cells; y++) {
         for (let x = 0; x < cells; x++) {
-          const finder = (x < 7 && y < 7) || (x > 13 && y < 7) || (x < 7 && y > 13);
-          const seed = url.charCodeAt((x * 7 + y * 11) % url.length) + x * 13 + y * 17 + Math.floor(t / 700);
-          if (finder || seed % 5 < 2) ctx.fillRect(x0 + x * cell, y0 + y * cell, Math.ceil(cell) - 1, Math.ceil(cell) - 1);
+          const finder = (x < 7 && y < 7) || (x > 17 && y < 7) || (x < 7 && y > 17);
+          const seed = nodeUrl.charCodeAt((x * 3 + y * 5) % nodeUrl.length) + x * 11 + y * 17 + Math.floor(t / 800);
+          if (finder || seed % 7 < 3) qx.fillRect(x * cell, y * cell, cell - 1, cell - 1);
         }
       }
     }
 
     function render(t) {
-      const rect = canvas.getBoundingClientRect();
+      resizeCanvas(stage, ctx);
+      const rect = stage.getBoundingClientRect();
       const w = rect.width;
       const h = rect.height;
       ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = 'rgba(85,184,255,0.08)';
-      for (let y = 28; y < h; y += 28) {
-        ctx.fillRect(0, y, w, 1);
+      ctx.strokeStyle = 'rgba(248,251,255,0.08)';
+      ctx.lineWidth = 1;
+      for (let y = 18; y < h; y += 18) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(w, y);
+        ctx.stroke();
       }
       drawLaptop(w, h, t);
-      drawQr(w, h, t);
-      ctx.fillStyle = ready ? 'rgba(141,255,180,0.92)' : 'rgba(255,209,102,0.86)';
-      ctx.font = '700 18px ui-monospace, monospace';
-      ctx.fillText(lastStatus, 28, 38);
-      ctx.fillStyle = 'rgba(233,251,255,0.72)';
-      ctx.font = '14px ui-monospace, monospace';
-      ctx.fillText(phaseText, 28, 62);
+      drawQr(t);
       requestAnimationFrame(render);
     }
 
-    function tickClock() {
-      clockEl.textContent = new Date().toLocaleTimeString();
-    }
-
-    window.addEventListener('resize', resize);
-    resize();
-    tickClock();
+    window.addEventListener('resize', () => resizeCanvas(stage, ctx));
     probe();
-    setInterval(tickClock, 1000);
-    setInterval(probe, 3000);
+    setInterval(probe, 2500);
     requestAnimationFrame(render);
   </script>
 </body>
