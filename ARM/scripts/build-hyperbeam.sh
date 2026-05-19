@@ -79,42 +79,33 @@ fi
 
 if [ -n "${REAL_CARGO:-}" ]; then
     mkdir -p "$BUILD_DIR/.lapee-arm-bin"
+    make_compiler_wrapper() {
+        wrapper_name="$1"
+        real_compiler="$2"
+        cat > "$BUILD_DIR/.lapee-arm-bin/$wrapper_name" <<EOF
+#!/usr/bin/env bash
+args=()
+for arg in "\$@"; do
+    case "\$arg" in
+        -mindirect-branch|-mindirect-branch=*|-mindirect-branch-register|-mfunction-return|-mfunction-return=*|-fcf-protection|-fcf-protection=*)
+            ;;
+        *)
+            args+=("\$arg")
+            ;;
+    esac
+done
+exec "$real_compiler" "\${args[@]}"
+EOF
+        chmod +x "$BUILD_DIR/.lapee-arm-bin/$wrapper_name"
+    }
     REAL_CC=$(command -v cc || true)
     REAL_CXX=$(command -v c++ || true)
-    if [ -n "$REAL_CC" ]; then
-        cat > "$BUILD_DIR/.lapee-arm-bin/cc" <<EOF
-#!/usr/bin/env bash
-args=()
-for arg in "\$@"; do
-    case "\$arg" in
-        -mindirect-branch|-mindirect-branch=*|-mindirect-branch-register|-mfunction-return|-mfunction-return=*|-fcf-protection|-fcf-protection=*)
-            ;;
-        *)
-            args+=("\$arg")
-            ;;
-    esac
-done
-exec "$REAL_CC" "\${args[@]}"
-EOF
-        chmod +x "$BUILD_DIR/.lapee-arm-bin/cc"
-    fi
-    if [ -n "$REAL_CXX" ]; then
-        cat > "$BUILD_DIR/.lapee-arm-bin/c++" <<EOF
-#!/usr/bin/env bash
-args=()
-for arg in "\$@"; do
-    case "\$arg" in
-        -mindirect-branch|-mindirect-branch=*|-mindirect-branch-register|-mfunction-return|-mfunction-return=*|-fcf-protection|-fcf-protection=*)
-            ;;
-        *)
-            args+=("\$arg")
-            ;;
-    esac
-done
-exec "$REAL_CXX" "\${args[@]}"
-EOF
-        chmod +x "$BUILD_DIR/.lapee-arm-bin/c++"
-    fi
+    REAL_GCC=$(command -v gcc || true)
+    REAL_GXX=$(command -v g++ || true)
+    [ -n "$REAL_CC" ] && make_compiler_wrapper cc "$REAL_CC"
+    [ -n "$REAL_CXX" ] && make_compiler_wrapper c++ "$REAL_CXX"
+    [ -n "$REAL_GCC" ] && make_compiler_wrapper gcc "$REAL_GCC"
+    [ -n "$REAL_GXX" ] && make_compiler_wrapper g++ "$REAL_GXX"
     REAL_CMAKE=$(command -v cmake || true)
     if [ -n "$REAL_CMAKE" ]; then
         cat > "$BUILD_DIR/.lapee-arm-bin/cmake" <<EOF
@@ -129,6 +120,8 @@ exec "$REAL_CMAKE" \
     -DCMAKE_THREAD_LIBS_INIT=-pthread \
     -DCMAKE_HAVE_THREADS_LIBRARY=1 \
     -DCMAKE_USE_PTHREADS_INIT=1 \
+    -DCMAKE_C_COMPILER="$BUILD_DIR/.lapee-arm-bin/cc" \
+    -DCMAKE_CXX_COMPILER="$BUILD_DIR/.lapee-arm-bin/c++" \
     "\$@"
 EOF
         chmod +x "$BUILD_DIR/.lapee-arm-bin/cmake"
