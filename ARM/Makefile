@@ -42,7 +42,7 @@ service:
 start-node:
 	systemctl daemon-reload
 	systemctl start lapee-hyperbeam.service
-	bash ./scripts/run-display.sh
+	LAPEE_DISPLAY_DETACH=1 bash ./scripts/run-display.sh
 
 start:
 	systemctl daemon-reload
@@ -53,6 +53,7 @@ display:
 
 stop:
 	-systemctl stop lapee-hyperbeam.service
+	-pkill -f '/tmp/lapee-arm-chromium'
 	-pkill -f '/opt/lapee-arm/display/index.html'
 	-pkill -f 'ARM/display/index.html'
 

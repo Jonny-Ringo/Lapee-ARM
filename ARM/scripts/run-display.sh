@@ -37,6 +37,8 @@ URL="file://$DISPLAY_FILE"
 export DISPLAY="${DISPLAY:-:0}"
 OPERATOR="${LAPEE_OPERATOR:-unknown}"
 CONFIG="${LAPEE_CONFIG:-/etc/lapee-arm/lapee-arm.json}"
+PROFILE_DIR="${LAPEE_CHROMIUM_PROFILE:-/tmp/lapee-arm-chromium}"
+DISPLAY_LOG="${LAPEE_DISPLAY_LOG:-/tmp/lapee-arm-display.log}"
 if [ -f "$CONFIG" ]; then
     DEVICE_COUNT=$(grep -c '"name":' "$CONFIG" || true)
 else
@@ -75,18 +77,36 @@ FLAGS=(
     --disable-software-rasterizer=false
     --disable-sync
     --disable-translate
+    --disable-component-extensions-with-background-pages
+    --disable-domain-reliability
+    --disable-logging
     --disable-features=MediaRouter,OptimizationHints,PushMessaging
     --disable-session-crashed-bubble
+    --log-level=3
+    --metrics-recording-only
+    --password-store=basic
     --use-gl=swiftshader
-    --user-data-dir=/tmp/lapee-arm-chromium
+    --user-data-dir="$PROFILE_DIR"
     --app="$URL"
 )
+
+if command -v pkill >/dev/null 2>&1; then
+    pkill -f "$PROFILE_DIR" >/dev/null 2>&1 || true
+    sleep 1
+fi
 
 if [ -n "${SUDO_USER:-}" ] && [ "$SUDO_USER" != "root" ]; then
     USER_HOME=$(getent passwd "$SUDO_USER" | cut -d: -f6)
     export XAUTHORITY="${XAUTHORITY:-$USER_HOME/.Xauthority}"
-    exec sudo -u "$SUDO_USER" env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" \
-        "$BROWSER" "${FLAGS[@]}"
+    CMD=(sudo -u "$SUDO_USER" env DISPLAY="$DISPLAY" XAUTHORITY="$XAUTHORITY" "$BROWSER" "${FLAGS[@]}")
+else
+    CMD=("$BROWSER" "${FLAGS[@]}")
 fi
 
-exec "$BROWSER" "${FLAGS[@]}"
+if [ "${LAPEE_DISPLAY_DETACH:-0}" = "1" ]; then
+    nohup "${CMD[@]}" >"$DISPLAY_LOG" 2>&1 &
+    echo "Display started in kiosk mode. Log: $DISPLAY_LOG"
+    exit 0
+fi
+
+exec "${CMD[@]}"
