@@ -161,3 +161,6 @@ Changed:
 Next useful work is a Pi image-builder path that starts from Raspberry Pi OS
 Lite arm64, installs this runtime into the root filesystem, and optionally
 supports a TPM HAT with `LAPEE_TPM_TCTI=device:/dev/tpm0`.
+
+Secure Boot / TPM work lives on the `Secureboot-TPM` branch. See
+`ARM/docs/secureboot-tpm-plan.md` there for the Pi-specific attestation plan.
