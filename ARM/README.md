@@ -73,6 +73,11 @@ If you have no TPM, TPM endpoints are expected to be unavailable or degraded.
 The service sets `LAPEE_TPM_ALLOW_NO_NIF=1` so the overlay can load for
 development and non-attested operation.
 
+Unlike the upstream appliance config, the ARM config does not run
+`measurement@1.0/boot` as a startup hook. A stock Raspberry Pi 4 has no supported
+TPM/SNP measurement device, so requiring that hook would stop the node during
+startup.
+
 ## Build Notes
 
 The build script:

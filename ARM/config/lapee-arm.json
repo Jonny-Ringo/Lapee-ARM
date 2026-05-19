@@ -6,17 +6,6 @@
   "trusted_device_signers": [],
   "arm_port": true,
   "arm_port_note": "Raspberry Pi OS ARM64 port. Stock Raspberry Pi 4 has no PC TPM/TME measured-boot equivalence.",
-  "on": {
-    "start": {
-      "device": "measurement@1.0",
-      "path": "boot",
-      "method": "POST",
-      "target": "body",
-      "hook": {
-        "result": "ignore"
-      }
-    }
-  },
   "preloaded_devices": [
     {"name": "arweave@2.9", "module": "dev_arweave", "ao-types": "module=\"atom\""},
     {"name": "apply@1.0", "module": "dev_apply", "ao-types": "module=\"atom\""},
