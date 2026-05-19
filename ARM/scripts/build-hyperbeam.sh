@@ -98,6 +98,8 @@ EOF
 fi
 export LAPEE_TSS2_PREFIX="${LAPEE_TSS2_PREFIX:-/usr}"
 export CFLAGS="${CFLAGS:-} -Wno-error=incompatible-pointer-types"
+export CXXFLAGS="${CXXFLAGS:-}"
+export CMAKE_REQUIRED_FLAGS="${CMAKE_REQUIRED_FLAGS:- -pthread}"
 export OPENSSL_NO_VENDOR=1
 if command -v pkg-config >/dev/null 2>&1 && pkg-config --exists openssl; then
     openssl_lib_dir=$(pkg-config --variable=libdir openssl)

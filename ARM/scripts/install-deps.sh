@@ -26,9 +26,12 @@ $SUDO apt-get install -y \
     erlang-ssl \
     erlang-tools \
     libclang-dev \
-    libssl-dev \
+    libc6-dev \
     libgmp-dev \
+    libssl-dev \
     libtss2-dev \
+    linux-libc-dev \
+    ninja-build \
     pkg-config \
     protobuf-compiler \
     python3 \
