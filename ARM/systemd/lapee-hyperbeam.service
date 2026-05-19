@@ -11,8 +11,7 @@ Environment=HB_MODE=debug
 Environment=LAPEE_TPM_ALLOW_NO_NIF=1
 Environment=LAPEE_TPM_TCTI=device:/dev/tpm0
 ExecStart=/opt/lapee-arm/hyperbeam/bin/hb foreground
-Restart=on-failure
-RestartSec=5
+Restart=no
 NoNewPrivileges=true
 
 [Install]
