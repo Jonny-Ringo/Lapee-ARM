@@ -72,6 +72,13 @@ This port intentionally does not enable HyperBEAM at boot. Use `make run` while
 debugging, or `sudo make start` after the Pi has booted when you want the node
 in the background.
 
+Once the node/display path is verified, start the full local LapEE ARM instance
+manually with:
+
+```sh
+sudo make start-node
+```
+
 If you have no TPM, TPM endpoints are expected to be unavailable or degraded.
 The service sets `LAPEE_TPM_ALLOW_NO_NIF=1` so the overlay can load for
 development and non-attested operation.

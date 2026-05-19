@@ -236,6 +236,9 @@
 
   <script>
     const api = 'http://127.0.0.1:8734';
+    const params = new URLSearchParams(window.location.search);
+    const deviceCount = params.get('devices') || '64';
+    const operatorParam = params.get('operator') || 'unknown';
     const stateEl = document.getElementById('state');
     const badgeEl = document.getElementById('badge');
     const operatorEl = document.getElementById('operator');
@@ -251,6 +254,11 @@
     let footer = 'Starting HyperBEAM.';
     let nodeUrl = `${api}/`;
     let bootAt = performance.now();
+
+    function compact(value) {
+      if (!value || value === 'unknown') return 'unknown';
+      return value.length > 11 ? `${value.slice(0, 9)}...` : value;
+    }
 
     function setState(text, ok) {
       ready = ok;
@@ -271,14 +279,14 @@
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         setState('READY', true);
         footer = `Running at ${nodeUrl}`;
-        operatorEl.textContent = 'operator: node online';
-        devicesEl.textContent = 'probe: HEAD /~meta@1.0/info';
+        operatorEl.textContent = `operator: ${compact(operatorParam)}`;
+        devicesEl.textContent = `devices: ${deviceCount} preloaded`;
       } catch (err) {
         const secs = Math.floor((performance.now() - bootAt) / 1000);
         setState('HB STARTING', false);
         footer = `Starting HyperBEAM. 127.0.0.1 (${secs}s)`;
-        operatorEl.textContent = 'operator: waiting';
-        devicesEl.textContent = `probe: ${err.message}`;
+        operatorEl.textContent = `operator: ${compact(operatorParam)}`;
+        devicesEl.textContent = `devices: ${deviceCount} preloaded`;
       }
       footerEl.textContent = footer;
       urlEl.textContent = nodeUrl;

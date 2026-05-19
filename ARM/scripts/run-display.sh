@@ -35,6 +35,14 @@ fi
 
 URL="file://$DISPLAY_FILE"
 export DISPLAY="${DISPLAY:-:0}"
+OPERATOR="${LAPEE_OPERATOR:-unknown}"
+CONFIG="${LAPEE_CONFIG:-/etc/lapee-arm/lapee-arm.json}"
+if [ -f "$CONFIG" ]; then
+    DEVICE_COUNT=$(grep -c '"name":' "$CONFIG" || true)
+else
+    DEVICE_COUNT=0
+fi
+URL="${URL}?operator=$OPERATOR&devices=$DEVICE_COUNT"
 
 FLAGS=(
     --kiosk

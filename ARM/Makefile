@@ -8,7 +8,7 @@ CONFIG_DIR ?= /etc/lapee-arm
 
 export ARM_ROOT UPSTREAM_ROOT BUILD_DIR INSTALL_PREFIX CONFIG_DIR
 
-.PHONY: help deps build run install service start stop status display clean
+.PHONY: help deps build run install service start start-node stop status display clean
 
 help:
 	@printf '%s\n' \
@@ -17,6 +17,7 @@ help:
 	  '  make build      Build HyperBEAM with the LapEE overlay for ARM64' \
 	  '  make run        Run the built node in the foreground' \
 	  '  sudo make install   Install runtime and systemd unit' \
+	  '  sudo make start-node Start HyperBEAM and local display for this boot' \
 	  '  sudo make start     Start HyperBEAM for this boot only' \
 	  '  make display    Open the local browser display' \
 	  '  sudo make stop      Stop the display and node' \
@@ -37,6 +38,11 @@ install:
 
 service:
 	$(MAKE) start
+
+start-node:
+	systemctl daemon-reload
+	systemctl start lapee-hyperbeam.service
+	bash ./scripts/run-display.sh
 
 start:
 	systemctl daemon-reload
