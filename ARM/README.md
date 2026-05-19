@@ -18,12 +18,19 @@ So this port does not claim LapEE-equivalent attestation. It rebuilds the
 LapEE-flavored HyperBEAM runtime natively on ARM64, stages the LapEE overlay,
 and runs it as a systemd service on Raspberry Pi OS.
 
+## Running Alpha Build
+
+Example of a running ALPHA LapEE build on Raspberry Pi 4 ARM:
+
+![Running ALPHA LapEE build on Raspberry Pi 4 ARM](display/Example_Pi_4.jpg)
+
 ## Layout
 
 ```text
 ARM/
   Makefile
   config/lapee-arm.json
+  display/Example_Pi_4.jpg
   display/index.html
   scripts/install-deps.sh
   scripts/build-hyperbeam.sh
