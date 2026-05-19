@@ -79,6 +79,24 @@ fi
 
 if [ -n "${REAL_CARGO:-}" ]; then
     mkdir -p "$BUILD_DIR/.lapee-arm-bin"
+    REAL_CMAKE=$(command -v cmake || true)
+    if [ -n "$REAL_CMAKE" ]; then
+        cat > "$BUILD_DIR/.lapee-arm-bin/cmake" <<EOF
+#!/usr/bin/env bash
+case " \$* " in
+    *" --build "*|*" -E "*|*" --version "*|*" --help "*)
+        exec "$REAL_CMAKE" "\$@"
+        ;;
+esac
+exec "$REAL_CMAKE" \
+    -DTHREADS_PREFER_PTHREAD_FLAG=ON \
+    -DCMAKE_THREAD_LIBS_INIT=-pthread \
+    -DCMAKE_HAVE_THREADS_LIBRARY=1 \
+    -DCMAKE_USE_PTHREADS_INIT=1 \
+    "\$@"
+EOF
+        chmod +x "$BUILD_DIR/.lapee-arm-bin/cmake"
+    fi
     cat > "$BUILD_DIR/.lapee-arm-bin/cargo" <<EOF
 #!/usr/bin/env bash
 log="$BUILD_DIR/cargo-last.log"
