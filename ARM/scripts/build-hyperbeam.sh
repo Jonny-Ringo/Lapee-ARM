@@ -87,7 +87,7 @@ if [ -n "${REAL_CARGO:-}" ]; then
 args=()
 for arg in "\$@"; do
     case "\$arg" in
-        -mindirect-branch|-mindirect-branch=*|-mindirect-branch-register|-mfunction-return|-mfunction-return=*|-fcf-protection|-fcf-protection=*)
+        -mindirect-branch|-mindirect-branch=*|-mindirect-branch-register|-mfunction-return|-mfunction-return=*|-fcf-protection|-fcf-protection=*|-msse|-msse2|-msse3|-mssse3|-msse4|-msse4.1|-msse4.2|-mavx|-mavx2|-mavx512*)
             ;;
         *)
             args+=("\$arg")
