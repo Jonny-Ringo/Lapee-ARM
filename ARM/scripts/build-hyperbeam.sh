@@ -79,6 +79,42 @@ fi
 
 if [ -n "${REAL_CARGO:-}" ]; then
     mkdir -p "$BUILD_DIR/.lapee-arm-bin"
+    REAL_CC=$(command -v cc || true)
+    REAL_CXX=$(command -v c++ || true)
+    if [ -n "$REAL_CC" ]; then
+        cat > "$BUILD_DIR/.lapee-arm-bin/cc" <<EOF
+#!/usr/bin/env bash
+args=()
+for arg in "\$@"; do
+    case "\$arg" in
+        -mindirect-branch|-mindirect-branch=*|-mindirect-branch-register|-mfunction-return|-mfunction-return=*|-fcf-protection|-fcf-protection=*)
+            ;;
+        *)
+            args+=("\$arg")
+            ;;
+    esac
+done
+exec "$REAL_CC" "\${args[@]}"
+EOF
+        chmod +x "$BUILD_DIR/.lapee-arm-bin/cc"
+    fi
+    if [ -n "$REAL_CXX" ]; then
+        cat > "$BUILD_DIR/.lapee-arm-bin/c++" <<EOF
+#!/usr/bin/env bash
+args=()
+for arg in "\$@"; do
+    case "\$arg" in
+        -mindirect-branch|-mindirect-branch=*|-mindirect-branch-register|-mfunction-return|-mfunction-return=*|-fcf-protection|-fcf-protection=*)
+            ;;
+        *)
+            args+=("\$arg")
+            ;;
+    esac
+done
+exec "$REAL_CXX" "\${args[@]}"
+EOF
+        chmod +x "$BUILD_DIR/.lapee-arm-bin/c++"
+    fi
     REAL_CMAKE=$(command -v cmake || true)
     if [ -n "$REAL_CMAKE" ]; then
         cat > "$BUILD_DIR/.lapee-arm-bin/cmake" <<EOF
@@ -113,6 +149,8 @@ EOF
     chmod +x "$BUILD_DIR/.lapee-arm-bin/cargo"
     export PATH="$BUILD_DIR/.lapee-arm-bin:$PATH"
     export CARGO="$BUILD_DIR/.lapee-arm-bin/cargo"
+    [ -n "$REAL_CC" ] && export CC="$BUILD_DIR/.lapee-arm-bin/cc"
+    [ -n "$REAL_CXX" ] && export CXX="$BUILD_DIR/.lapee-arm-bin/c++"
 fi
 export LAPEE_TSS2_PREFIX="${LAPEE_TSS2_PREFIX:-/usr}"
 export CFLAGS="${CFLAGS:-} -Wno-error=incompatible-pointer-types"
