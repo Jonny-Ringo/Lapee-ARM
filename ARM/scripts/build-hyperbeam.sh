@@ -81,15 +81,16 @@ if [ -n "${REAL_CARGO:-}" ]; then
     mkdir -p "$BUILD_DIR/.lapee-arm-bin"
     cat > "$BUILD_DIR/.lapee-arm-bin/cargo" <<EOF
 #!/usr/bin/env bash
-set -o pipefail
 log="$BUILD_DIR/cargo-last.log"
 {
     echo "== cargo \$(date -Iseconds) =="
     echo "cwd=\$PWD"
     echo "args: \$*"
-    "$REAL_CARGO" "\$@"
-} 2>&1 | tee "\$log"
-exit "\${PIPESTATUS[0]}"
+} >> "\$log"
+"$REAL_CARGO" "\$@" 2> >(tee -a "\$log" >&2)
+status=\$?
+echo "exit=\$status" >> "\$log"
+exit "\$status"
 EOF
     chmod +x "$BUILD_DIR/.lapee-arm-bin/cargo"
     export PATH="$BUILD_DIR/.lapee-arm-bin:$PATH"
