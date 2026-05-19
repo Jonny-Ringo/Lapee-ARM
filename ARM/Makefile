@@ -54,6 +54,8 @@ display:
 
 stop:
 	-systemctl stop lapee-hyperbeam.service
+	-systemctl kill --kill-who=all --signal=KILL lapee-hyperbeam.service
+	-systemctl reset-failed lapee-hyperbeam.service
 	-pkill -f '/tmp/lapee-arm-chromium'
 	-pkill -f '/opt/lapee-arm/display/index.html'
 	-pkill -f 'ARM/display/index.html'

@@ -15,6 +15,8 @@ Environment=LAPEE_TPM_TCTI=device:/dev/tpm0
 ExecStartPre=/bin/sh -c 'if [ ! -f /var/lib/lapee-arm/.erlang.cookie ]; then umask 077; tr -dc A-Za-z0-9 </dev/urandom | head -c 32 > /var/lib/lapee-arm/.erlang.cookie; fi; chmod 400 /var/lib/lapee-arm/.erlang.cookie'
 ExecStart=/opt/lapee-arm/hyperbeam/bin/hb foreground
 Restart=no
+KillMode=mixed
+TimeoutStopSec=20
 NoNewPrivileges=true
 
 [Install]
