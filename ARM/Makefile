@@ -35,7 +35,6 @@ install:
 service:
 	systemctl daemon-reload
 	systemctl enable --now lapee-hyperbeam.service
-	systemctl enable --now lapee-splash.service
 
 clean:
 	rm -rf "$(BUILD_DIR)"

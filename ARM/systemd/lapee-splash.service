@@ -2,7 +2,6 @@
 Description=LapEE ARM local console splash
 After=network-online.target lapee-hyperbeam.service
 Wants=network-online.target lapee-hyperbeam.service
-Conflicts=getty@tty1.service
 
 [Service]
 Type=simple
