@@ -48,15 +48,21 @@ make deps
 make build
 sudo make install
 sudo systemctl enable --now lapee-hyperbeam
+sudo systemctl enable --now lapee-splash
 ```
 
 Then check:
 
 ```sh
 systemctl status lapee-hyperbeam
+systemctl status lapee-splash
 curl http://127.0.0.1:8734/~meta@1.0/info
 curl http://127.0.0.1:8734/~system@1.0/all
 ```
+
+The optional `lapee-splash` service installs the original LapEE console splash
+renderer on `/dev/tty1`. It shows the animated local status display while the
+HyperBEAM node runs in the background.
 
 If you have no TPM, TPM endpoints are expected to be unavailable or degraded.
 The service sets `LAPEE_TPM_ALLOW_NO_NIF=1` so the overlay can load for

@@ -1,0 +1,23 @@
+[Unit]
+Description=LapEE ARM local console splash
+After=network-online.target lapee-hyperbeam.service
+Wants=network-online.target lapee-hyperbeam.service
+Conflicts=getty@tty1.service
+
+[Service]
+Type=simple
+Environment=LAPEE_CONSOLE=/dev/tty1
+Environment=LAPEE_STATUS=/run/lapee/status
+Environment=LAPEE_PRIMARY_NET=/run/lapee/primary-net
+Environment=LAPEE_PROBE_HOST=127.0.0.1
+Environment=LAPEE_PROBE_PORT=8734
+Environment=LAPEE_PROBE_PATH=/~meta@1.0/info
+Environment=LAPEE_SPLASH_LOG=/run/lapee/splash.log
+Environment=LAPEE_SPLASH_LAYOUT=blue
+ExecStartPre=/bin/sh -c 'mkdir -p /run/lapee; printf "Starting LapEE.\n" > /run/lapee/status; ip=$$(hostname -I | awk "{print \\$1}"); [ -n "$$ip" ] && printf "ip=%s\n" "$$ip" > /run/lapee/primary-net || true'
+ExecStart=/usr/bin/erl -boot start_clean -pa /opt/lapee-arm/splash -noshell -noinput -run lapee_splash main
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

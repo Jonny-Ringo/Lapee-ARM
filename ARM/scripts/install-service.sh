@@ -37,6 +37,11 @@ rm -rf "$INSTALL_PREFIX/hyperbeam"
 cp -a "$REL_DIR" "$INSTALL_PREFIX/hyperbeam"
 install -m 0644 "$ARM_ROOT/config/lapee-arm.json" "$CONFIG_DIR/lapee-arm.json"
 install -m 0644 "$ARM_ROOT/systemd/lapee-hyperbeam.service" /etc/systemd/system/lapee-hyperbeam.service
+install -d "$INSTALL_PREFIX/splash"
+install -m 0644 "$ARM_ROOT/../upstream-lapee/buildroot-external/board/lapee/files/lapee_splash.erl" \
+    "$INSTALL_PREFIX/splash/lapee_splash.erl"
+erlc -o "$INSTALL_PREFIX/splash" "$INSTALL_PREFIX/splash/lapee_splash.erl"
+install -m 0644 "$ARM_ROOT/systemd/lapee-splash.service" /etc/systemd/system/lapee-splash.service
 
 systemctl daemon-reload
-echo "Installed. Start with: systemctl enable --now lapee-hyperbeam"
+echo "Installed. Start with: systemctl enable --now lapee-hyperbeam lapee-splash"
