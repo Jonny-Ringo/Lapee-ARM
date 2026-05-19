@@ -252,10 +252,6 @@
     let nodeUrl = `${api}/`;
     let bootAt = performance.now();
 
-    function readPath(obj, path) {
-      return path.reduce((value, key) => value && value[key], obj);
-    }
-
     function setState(text, ok) {
       ready = ok;
       stateEl.textContent = text;
@@ -269,21 +265,14 @@
     async function probe() {
       try {
         const res = await fetch(`${api}/~meta@1.0/info`, {
-          headers: { accept: 'application/json', 'accept-bundle': 'true' },
+          method: 'HEAD',
           cache: 'no-store'
         });
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const json = await res.json();
         setState('READY', true);
         footer = `Running at ${nodeUrl}`;
-        const operator =
-          readPath(json, ['body', 'operator']) ||
-          readPath(json, ['operator']) ||
-          readPath(json, ['body', 'address']) ||
-          'available';
-        operatorEl.textContent = `operator: ${String(operator).slice(0, 34)}`;
-        const preloaded = readPath(json, ['body', 'preloaded-devices']) || readPath(json, ['preloaded-devices']);
-        devicesEl.textContent = Array.isArray(preloaded) ? `devices: ${preloaded.length} preloaded` : 'devices: loaded';
+        operatorEl.textContent = 'operator: node online';
+        devicesEl.textContent = 'probe: HEAD /~meta@1.0/info';
       } catch (err) {
         const secs = Math.floor((performance.now() - bootAt) / 1000);
         setState('HB STARTING', false);
