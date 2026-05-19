@@ -47,7 +47,7 @@ cd /path/to/Lapee-ARM/ARM
 make deps
 make build
 sudo make install
-sudo systemctl enable --now lapee-hyperbeam
+sudo make start
 ```
 
 Then check:
@@ -59,11 +59,15 @@ curl http://127.0.0.1:8734/~system@1.0/all
 ```
 
 The optional `lapee-splash` service installs the original LapEE console splash
-renderer on `/dev/tty1`. Start it manually only after verifying the node:
+renderer on `/dev/tty2`. Start it manually only after verifying the node:
 
 ```sh
-sudo systemctl start lapee-splash
+sudo make display
 ```
+
+This port intentionally does not enable either service at boot. Use
+`sudo make start` after the Pi has booted, and `sudo make stop` before shutting
+the node down.
 
 If you have no TPM, TPM endpoints are expected to be unavailable or degraded.
 The service sets `LAPEE_TPM_ALLOW_NO_NIF=1` so the overlay can load for

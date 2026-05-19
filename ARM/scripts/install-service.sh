@@ -44,5 +44,5 @@ erlc -o "$INSTALL_PREFIX/splash" "$INSTALL_PREFIX/splash/lapee_splash.erl"
 install -m 0644 "$ARM_ROOT/systemd/lapee-splash.service" /etc/systemd/system/lapee-splash.service
 
 systemctl daemon-reload
-echo "Installed. Start with: systemctl enable --now lapee-hyperbeam"
-echo "Optional display service, start manually only: systemctl start lapee-splash"
+echo "Installed. Start manually with: systemctl start lapee-hyperbeam"
+echo "Optional display on tty2: systemctl start lapee-splash"
