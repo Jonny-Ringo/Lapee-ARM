@@ -98,8 +98,13 @@ EOF
 fi
 export LAPEE_TSS2_PREFIX="${LAPEE_TSS2_PREFIX:-/usr}"
 export CFLAGS="${CFLAGS:-} -Wno-error=incompatible-pointer-types"
-export OPENSSL_DIR="${OPENSSL_DIR:-/usr}"
 export OPENSSL_NO_VENDOR=1
+if command -v pkg-config >/dev/null 2>&1 && pkg-config --exists openssl; then
+    openssl_lib_dir=$(pkg-config --variable=libdir openssl)
+    openssl_include_dir=$(pkg-config --variable=includedir openssl)
+    export OPENSSL_LIB_DIR="${OPENSSL_LIB_DIR:-$openssl_lib_dir}"
+    export OPENSSL_INCLUDE_DIR="${OPENSSL_INCLUDE_DIR:-$openssl_include_dir}"
+fi
 export DIAGNOSTIC="${DIAGNOSTIC:-1}"
 export CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS:-1}"
 export LAPEE_ARM_STUB_SNP_NIF="${LAPEE_ARM_STUB_SNP_NIF:-1}"
