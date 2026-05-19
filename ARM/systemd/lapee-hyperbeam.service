@@ -6,10 +6,13 @@ Wants=network-online.target
 [Service]
 Type=simple
 WorkingDirectory=/opt/lapee-arm/hyperbeam
+StateDirectory=lapee-arm
+Environment=HOME=/var/lib/lapee-arm
 Environment=HB_CONFIG=/etc/lapee-arm/lapee-arm.json
 Environment=HB_MODE=debug
 Environment=LAPEE_TPM_ALLOW_NO_NIF=1
 Environment=LAPEE_TPM_TCTI=device:/dev/tpm0
+ExecStartPre=/bin/sh -c 'if [ ! -f /var/lib/lapee-arm/.erlang.cookie ]; then umask 077; tr -dc A-Za-z0-9 </dev/urandom | head -c 32 > /var/lib/lapee-arm/.erlang.cookie; fi; chmod 400 /var/lib/lapee-arm/.erlang.cookie'
 ExecStart=/opt/lapee-arm/hyperbeam/bin/hb foreground
 Restart=no
 NoNewPrivileges=true
