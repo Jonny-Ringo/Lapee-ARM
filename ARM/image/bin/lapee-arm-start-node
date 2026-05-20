@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+set -eu
+
+cd "${LAPEE_ARM_SRC:-/opt/lapee-arm-src/ARM}"
+
+if [ "$(id -u)" -eq 0 ]; then
+    exec make start-node
+fi
+
+exec sudo make start-node

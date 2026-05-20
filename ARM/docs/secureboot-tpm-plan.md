@@ -31,6 +31,20 @@ signed evidence from the running device.
 
 ## What We Need To Add
 
+0. Reproducible Pi image builder
+
+   The first step is an image that boots with the working LapEE ARM runtime
+   already installed. This is now staged under `ARM/image/` and the public
+   targets are:
+
+   ```text
+   make runtime-tarball
+   sudo make image BASE_IMAGE=/path/to/raspios-arm64.img
+   ```
+
+   This is not the attestation boundary yet. It gives us the artifact that the
+   secure-boot/TPM work can lock down and measure.
+
 1. Secure boot image path
 
    Build a Pi boot image whose firmware, kernel, initramfs, cmdline, and rootfs
@@ -103,4 +117,3 @@ Until then, the honest claim is:
 ```text
 LapEE ARM node with Raspberry Pi secure-boot/TPM work in progress.
 ```
-

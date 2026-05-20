@@ -8,13 +8,16 @@ CONFIG_DIR ?= /etc/lapee-arm
 
 export ARM_ROOT UPSTREAM_ROOT BUILD_DIR INSTALL_PREFIX CONFIG_DIR
 
-.PHONY: help deps build run install service start start-node stop status smoke display clean
+.PHONY: help deps image-deps build runtime-tarball image run install service start start-node stop status smoke display clean
 
 help:
 	@printf '%s\n' \
 	  'LapEE ARM/Raspberry Pi 4 targets:' \
 	  '  make deps       Install Raspberry Pi OS build dependencies' \
+	  '  sudo make image-deps Install host dependencies for image building' \
 	  '  make build      Build HyperBEAM with the LapEE overlay for ARM64' \
+	  '  make runtime-tarball Package the built runtime for image injection' \
+	  '  sudo make image BASE_IMAGE=/path/to/raspios.img Build LapEE ARM Pi image' \
 	  '  make run        Run the built node in the foreground' \
 	  '  sudo make install   Install runtime and systemd unit' \
 	  '  sudo make start-node Start HyperBEAM and local display for this boot' \
@@ -28,8 +31,17 @@ help:
 deps:
 	sh ./scripts/install-deps.sh
 
+image-deps:
+	sh ./scripts/install-image-deps.sh
+
 build:
 	bash ./scripts/build-hyperbeam.sh
+
+runtime-tarball:
+	bash ./scripts/package-runtime.sh
+
+image:
+	bash ./scripts/build-pi-image.sh
 
 run:
 	bash ./scripts/run-hyperbeam.sh

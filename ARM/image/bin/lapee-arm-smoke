@@ -1,0 +1,5 @@
+#!/usr/bin/env sh
+set -eu
+
+cd "${LAPEE_ARM_SRC:-/opt/lapee-arm-src/ARM}"
+exec make smoke

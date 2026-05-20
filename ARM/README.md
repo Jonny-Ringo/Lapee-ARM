@@ -47,6 +47,9 @@ Build output goes under `ARM/build/` and installed runtime files go under:
 /etc/lapee-arm/lapee-arm.json
 ```
 
+The `Secureboot-TPM` branch also includes the first Raspberry Pi image-builder
+path under `ARM/image/`.
+
 ## Quick Start on Raspberry Pi OS 64-bit
 
 Run these commands on the Pi:
@@ -108,6 +111,38 @@ Unlike the upstream appliance config, the ARM config does not run
 `measurement@1.0/boot` as a startup hook. A stock Raspberry Pi 4 has no supported
 TPM/SNP measurement device, so requiring that hook would stop the node during
 startup.
+
+## Image Builder
+
+On the `Secureboot-TPM` branch, package the working runtime and inject it into a
+Raspberry Pi OS arm64 base image:
+
+```sh
+cd /path/to/Lapee-ARM/ARM
+make deps
+make build
+make runtime-tarball
+sudo make image-deps
+sudo make image BASE_IMAGE=/path/to/raspios-arm64.img
+```
+
+The image output defaults to:
+
+```text
+ARM/build/images/lapee-arm-pi-alpha.img
+ARM/build/images/lapee-arm-pi-alpha.img.sha256
+```
+
+After flashing and booting that image:
+
+```sh
+lapee-arm-start-node
+lapee-arm-smoke
+lapee-arm-stop
+```
+
+This image builder is the staging step for secure boot and TPM work. It does not
+yet make a Raspberry Pi secure-boot/TPM attestation claim by itself.
 
 ## Build Notes
 

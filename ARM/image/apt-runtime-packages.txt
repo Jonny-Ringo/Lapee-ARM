@@ -1,0 +1,9 @@
+ca-certificates
+curl
+git
+make
+chromium
+x11-xserver-utils
+libssl-dev
+libgmp-dev
+libtss2-dev
